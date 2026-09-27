@@ -1,0 +1,36 @@
+﻿# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Logs
+*.log
+
+# Large/raw media
+*.mp4
+*.avi
+*.mov
+
+# Archives
+*.zip
+*.rar
+*.7z
+
+# Build files
+build/
+dist/
+Debug/
+Release/

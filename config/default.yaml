@@ -11,3 +11,17 @@ mission:
 camera:
   # Gazebo camera of the gimbal; the world name is part of the topic.
   gazebo_topic: /world/security_patrol/model/iris_with_gimbal/model/gimbal/link/pitch_link/sensor/camera/image
+
+detection:
+  model: yolov8n.pt          # COCO weights, downloaded on first use
+  confidence: 0.4            # thesis value
+  classes: [0]               # COCO "person"
+  image_size: 640
+  device: null               # null = GPU if available, else CPU
+  equalize: true             # histogram equalisation on Y (thesis)
+  sharpen: true              # sharpening kernel (thesis)
+  snapshot_dir: media/images # first annotated detection is saved here
+
+alert:
+  clear_after_s: 3           # alarm off after nobody is seen for this long
+  notify_every_s: 10         # repeat STATUSTEXT while the threat stays

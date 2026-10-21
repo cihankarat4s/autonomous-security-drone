@@ -6,8 +6,9 @@ checked against a real mission. Mission layout (same as the thesis tests):
     seq 0  home (ArduPilot overwrites it)
     seq 1  TAKEOFF 15 m
     seq 2  WAYPOINT 60 m north        <- protected area, trigger_seq: 2
-    seq 3  WAYPOINT 60 m north-east
-    seq 4  RTL
+    seq 3  LOITER_TIME 10 s there     (hover while the camera looks)
+    seq 4  WAYPOINT 60 m north-east
+    seq 5  RTL
 
 Usage (inside WSL, SITL running):
     python sim/fly_patrol_mission.py --connection tcp:127.0.0.1:5763
@@ -24,6 +25,8 @@ from security_drone.mavlink.connection import connect
 mavlink = mavutil.mavlink
 
 TAKEOFF_ALT_M = 15
+# Hover over the protected area so the camera has time to look around.
+PATROL_HOLD_S = 10
 EARTH_M_PER_DEG = 111_320
 
 
@@ -38,13 +41,17 @@ def build_mission(home_lat, home_lon):
     rel = mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT_INT
     wp1 = offset(home_lat, home_lon, 60, 0)
     wp2 = offset(home_lat, home_lon, 60, 60)
-    # (frame, command, lat, lon, alt)
+    # The hold is a separate item: a waypoint with its own hold time only
+    # reports MISSION_ITEM_REACHED when the hold ends, too late to start
+    # detection.
+    # (frame, command, param1, lat, lon, alt)
     return [
-        (mavlink.MAV_FRAME_GLOBAL_INT, mavlink.MAV_CMD_NAV_WAYPOINT, home_lat, home_lon, 0),
-        (rel, mavlink.MAV_CMD_NAV_TAKEOFF, 0, 0, TAKEOFF_ALT_M),
-        (rel, mavlink.MAV_CMD_NAV_WAYPOINT, *wp1, TAKEOFF_ALT_M),
-        (rel, mavlink.MAV_CMD_NAV_WAYPOINT, *wp2, TAKEOFF_ALT_M),
-        (rel, mavlink.MAV_CMD_NAV_RETURN_TO_LAUNCH, 0, 0, 0),
+        (mavlink.MAV_FRAME_GLOBAL_INT, mavlink.MAV_CMD_NAV_WAYPOINT, 0, home_lat, home_lon, 0),
+        (rel, mavlink.MAV_CMD_NAV_TAKEOFF, 0, 0, 0, TAKEOFF_ALT_M),
+        (rel, mavlink.MAV_CMD_NAV_WAYPOINT, 0, *wp1, TAKEOFF_ALT_M),
+        (rel, mavlink.MAV_CMD_NAV_LOITER_TIME, PATROL_HOLD_S, *wp1, TAKEOFF_ALT_M),
+        (rel, mavlink.MAV_CMD_NAV_WAYPOINT, 0, *wp2, TAKEOFF_ALT_M),
+        (rel, mavlink.MAV_CMD_NAV_RETURN_TO_LAUNCH, 0, 0, 0, 0),
     ]
 
 
@@ -65,12 +72,12 @@ def upload_mission(master, items):
             if msg.type != mavlink.MAV_MISSION_ACCEPTED:
                 raise RuntimeError(f"Mission rejected: {msg.type}")
             return
-        frame, command, lat, lon, alt = items[msg.seq]
+        frame, command, param1, lat, lon, alt = items[msg.seq]
         master.mav.mission_item_int_send(
             master.target_system, master.target_component, msg.seq,
             frame, command,
             0, 1,  # current, autocontinue
-            0, 0, 0, 0,  # param1-4
+            param1, 0, 0, 0,  # param1-4
             int(lat * 1e7), int(lon * 1e7), alt,
             mavlink.MAV_MISSION_TYPE_MISSION,
         )
@@ -111,8 +118,9 @@ def main():
     pos = master.recv_match(type="GLOBAL_POSITION_INT", blocking=True, timeout=10)
     home_lat, home_lon = pos.lat / 1e7, pos.lon / 1e7
 
-    upload_mission(master, build_mission(home_lat, home_lon))
-    print("Mission uploaded (5 items)")
+    items = build_mission(home_lat, home_lon)
+    upload_mission(master, items)
+    print(f"Mission uploaded ({len(items)} items)")
 
     set_mode(master, "GUIDED")
     arm_when_ready(master)

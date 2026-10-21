@@ -1,85 +1,45 @@
 ﻿# Autonomous Security Drone
 
-An undergraduate autonomous drone project combining computer vision, autonomous flight, and MAVLink-based flight control for aerial monitoring and security-oriented applications.
+A low-cost autonomous drone that flies a pre-planned mission over a protected area, detects intruders with an onboard object detector and raises an alarm.
 
-## Overview
+This started as my undergraduate graduation project (TÜBİTAK 2209-A supported) and is now being **rebuilt in simulation** (ArduPilot SITL + Gazebo), because the original hardware is no longer available.
 
-This project was developed during my undergraduate engineering studies and explores the integration of a Pixhawk-based flight controller with Python computer vision and autonomous control.
+> **Status:** Work in progress. The simulation environment is set up; the companion application is being rewritten from scratch.
 
-The development process included:
+## Original system (hardware, tested during the project)
 
-- Pixhawk / MAVLink communication
-- DroneKit-based flight control
-- Autonomous takeoff, landing and movement
-- ArduPilot SITL simulation
-- OpenCV-based visual detection
-- STOP-sign detection and tracking experiments
-- Face detection and vision-guided yaw control
-- Vision-guided flight-control prototypes
-- A TUBITAK 2209-A research proposal on an image-processing-based autonomous area-control drone
+1. A mission planned in Mission Planner is flown autonomously by a Pixhawk running ArduPilot.
+2. A Raspberry Pi 5 companion computer listens to the flight controller over MAVLink and starts detection when the drone reaches the surveillance waypoint (`MISSION_ITEM_REACHED`).
+3. Frames from a Camera Module 3 NoIR are enhanced (histogram equalization, sharpening) and passed to a YOLOv8n detector looking for people.
+4. On a detection, a buzzer is triggered and a `STATUSTEXT` alert is sent to the ground station.
+5. The drone returns home with RTL when the mission ends.
 
-## Flight Control
+![Hardware wiring diagram](media/images/hardware_wiring_diagram.png)
 
-The flight-control modules include:
+**Hardware:** Pixhawk, Raspberry Pi 5 (8 GB), Camera Module 3 NoIR, 3DR 433 MHz telemetry, 3S 6200 mAh Li-Po, MINI560 step-down regulator, buzzer, FlySky FS-i6X.
 
-- Vehicle connection and telemetry
-- Arming and disarming
-- Autonomous takeoff
-- Landing
-- Return-to-Launch (RTL)
-- Yaw control
-- Local movement commands
+The original companion script and the custom-trained detection model were not preserved. Earlier 2024 prototypes (DroneKit flight helpers, OpenCV STOP-sign and face tracking) are available in the initial commit `3ba9fc8`.
 
-## Computer Vision
+## Rebuild in simulation
 
-OpenCV experiments include:
+```
+ArduPilot SITL (ArduCopter) <-- MAVLink --> companion app (Python, pymavlink)
+        ^                                      - mission trigger (MISSION_ITEM_REACHED)
+        | ardupilot_gazebo (JSON)              - camera -> YOLOv8n person detection
+Gazebo Harmonic: drone + gimbal camera         - non-blocking alarm + STATUSTEXT
+Mission Planner (Windows) <-- UDP 14550
+```
 
-- HSV-based red object segmentation
-- Octagonal STOP-sign detection
-- Contour-based object detection
-- Haar Cascade face detection
-- Target position calculation relative to the camera center
+Environment: Windows 11 + WSL2 (Ubuntu 22.04), ArduPilot SITL, Gazebo Harmonic with `ardupilot_gazebo`, NVIDIA GTX 1650 Ti.
 
-## Vision-Guided Flight
+The rebuilt version uses the COCO-pretrained `yolov8n.pt`, not the original custom model.
 
-Experimental modules combine visual detections with MAVLink flight commands. These prototypes explore yaw, roll and pitch control according to a detected target's position in the camera frame.
+## Repository structure
 
-## Simulation
-
-ArduPilot / MAVLink simulation experiments include SITL connection, autonomous arming and takeoff, yaw control, movement and automated landing.
-
-## Repository Structure
-
-- src/flight_control - Core drone-control functions
-- src/vision - Computer-vision experiments
-- src/autonomy - Vision-guided control prototypes
-- simulation - ArduPilot and MAVLink simulation experiments
-- tests/flight - Historical flight tests
-- docs/thesis - Undergraduate project reports
-- docs/research_project - Research-project documentation
-- docs/presentations - Project presentations
-- media/images - Project images
-- archive/early_experiments - Early development experiments
-
-## Technology Stack
-
-- Python
-- OpenCV
-- NumPy
-- DroneKit
-- PyMAVLink / MAVLink
-- Pixhawk
-- ArduPilot
-- ArduPilot SITL
-
-## Documentation
-
-The repository contains documentation from the original engineering process, including undergraduate project reports, presentations and TUBITAK 2209-A research-project material.
-
-## Project Status
-
-This is a historical undergraduate engineering project reconstructed and organized from the original development files. The repository separates core source code, simulation, flight tests and experimental prototypes.
+- `docs/thesis/` – undergraduate project reports
+- `docs/research_project/` – TÜBİTAK 2209-A project proposal
+- `media/images/` – wiring diagram and test footage frame
 
 ## Safety
 
-The flight-control software in this repository is experimental. Review and validate the code in simulation before considering operation on real hardware.
+Flight code in this repository is experimental. Validate everything in SITL before considering real hardware.

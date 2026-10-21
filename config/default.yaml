@@ -7,3 +7,7 @@ mission:
   # MISSION_ITEM_REACHED seq that starts detection.
   # seq 0 = home, seq 1 = TAKEOFF, seq 2 = first patrol waypoint.
   trigger_seq: 2
+
+camera:
+  # Gazebo camera of the gimbal; the world name is part of the topic.
+  gazebo_topic: /world/security_patrol/model/iris_with_gimbal/model/gimbal/link/pitch_link/sensor/camera/image

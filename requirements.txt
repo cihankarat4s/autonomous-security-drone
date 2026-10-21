@@ -1,4 +1,0 @@
-﻿dronekit
-pymavlink
-opencv-python
-numpy

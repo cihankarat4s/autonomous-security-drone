@@ -19,6 +19,17 @@ export GZ_SIM_SYSTEM_PLUGIN_PATH="$HOME/ardupilot_gazebo/build:${GZ_SIM_SYSTEM_P
 # Render on the NVIDIA GPU, not the Intel iGPU.
 export MESA_D3D12_DEFAULT_ADAPTER_NAME=NVIDIA
 
+# The gimbal starts at the horizon. Point it straight down (like the real drone's
+# overhead camera) and zoom in to a Pi-camera-like field of view (~80 deg instead
+# of 115 deg), so a person is about 40 px tall from 15 m. The joint
+# controller keeps the last command, so this only has to be sent once.
+(
+    until gz topic -l 2>/dev/null | grep -q "^/gimbal/cmd_pitch$"; do sleep 1; done
+    sleep 2
+    gz topic -t /gimbal/cmd_pitch -m gz.msgs.Double -p "data: 1.5708"
+    gz topic -t /model/gimbal/sensor/camera/zoom/cmd_zoom -m gz.msgs.Double -p "data: 1.8"
+) &
+
 if [[ "${1:-}" == "--headless" ]]; then
     exec gz sim -v3 -s -r --headless-rendering "$WORLD"
 fi

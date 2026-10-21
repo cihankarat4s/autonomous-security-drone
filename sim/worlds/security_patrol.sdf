@@ -1,0 +1,179 @@
+<?xml version="1.0" ?>
+<!--
+  Security patrol world: the home, drone and plugins of iris_runway, plus a
+  protected area 60 m north of home (the seq 2 waypoint of the patrol mission)
+  with a person walking inside it.
+
+  Frame: spherical_coordinates heading_deg 0 means +X = east and +Y = north,
+  so the waypoint 60 m north is at (0, 60). The protected area is a 20 x 20 m
+  patch centred there. The actor mesh is downloaded from Fuel on the first run.
+-->
+<sdf version="1.9">
+  <world name="security_patrol">
+    <physics name="1ms" type="ignore">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+
+    <plugin filename="gz-sim-physics-system"
+      name="gz::sim::systems::Physics">
+    </plugin>
+    <plugin
+      filename="gz-sim-sensors-system"
+      name="gz::sim::systems::Sensors">
+      <render_engine>ogre2</render_engine>
+    </plugin>
+    <plugin filename="gz-sim-user-commands-system"
+      name="gz::sim::systems::UserCommands">
+    </plugin>
+    <plugin filename="gz-sim-scene-broadcaster-system"
+      name="gz::sim::systems::SceneBroadcaster">
+    </plugin>
+    <plugin filename="gz-sim-imu-system"
+      name="gz::sim::systems::Imu">
+    </plugin>
+    <plugin filename="gz-sim-navsat-system"
+      name="gz::sim::systems::NavSat">
+    </plugin>
+
+    <scene>
+      <ambient>0.6 0.6 0.6</ambient>
+      <background>0.6 0.75 0.9</background>
+      <sky></sky>
+    </scene>
+
+    <!-- Same home as iris_runway, so SITL's home matches. -->
+    <spherical_coordinates>
+      <latitude_deg>-35.363262</latitude_deg>
+      <longitude_deg>149.165237</longitude_deg>
+      <elevation>584</elevation>
+      <heading_deg>0</heading_deg>
+      <surface_model>EARTH_WGS84</surface_model>
+    </spherical_coordinates>
+
+    <light type="directional" name="sun">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <direction>-0.5 0.1 -0.9</direction>
+    </light>
+
+    <model name="ground">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <plane><normal>0 0 1</normal><size>400 400</size></plane>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <cast_shadows>false</cast_shadows>
+          <geometry>
+            <plane><normal>0 0 1</normal><size>400 400</size></plane>
+          </geometry>
+          <material>
+            <ambient>0.35 0.5 0.3 1</ambient>
+            <diffuse>0.35 0.5 0.3 1</diffuse>
+            <specular>0 0 0 1</specular>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Protected area: tan patch with a red border and four corner posts. -->
+    <model name="protected_area">
+      <static>true</static>
+      <pose>0 60 0 0 0 0</pose>
+      <link name="link">
+        <visual name="patch">
+          <cast_shadows>false</cast_shadows>
+          <pose>0 0 0.01 0 0 0</pose>
+          <geometry><box><size>20 20 0.02</size></box></geometry>
+          <material>
+            <ambient>0.8 0.72 0.55 1</ambient>
+            <diffuse>0.8 0.72 0.55 1</diffuse>
+          </material>
+        </visual>
+        <visual name="border_n">
+          <cast_shadows>false</cast_shadows>
+          <pose>0 9.85 0.02 0 0 0</pose>
+          <geometry><box><size>20 0.3 0.02</size></box></geometry>
+          <material><ambient>0.8 0.1 0.1 1</ambient><diffuse>0.8 0.1 0.1 1</diffuse></material>
+        </visual>
+        <visual name="border_s">
+          <cast_shadows>false</cast_shadows>
+          <pose>0 -9.85 0.02 0 0 0</pose>
+          <geometry><box><size>20 0.3 0.02</size></box></geometry>
+          <material><ambient>0.8 0.1 0.1 1</ambient><diffuse>0.8 0.1 0.1 1</diffuse></material>
+        </visual>
+        <visual name="border_e">
+          <cast_shadows>false</cast_shadows>
+          <pose>9.85 0 0.02 0 0 0</pose>
+          <geometry><box><size>0.3 20 0.02</size></box></geometry>
+          <material><ambient>0.8 0.1 0.1 1</ambient><diffuse>0.8 0.1 0.1 1</diffuse></material>
+        </visual>
+        <visual name="border_w">
+          <cast_shadows>false</cast_shadows>
+          <pose>-9.85 0 0.02 0 0 0</pose>
+          <geometry><box><size>0.3 20 0.02</size></box></geometry>
+          <material><ambient>0.8 0.1 0.1 1</ambient><diffuse>0.8 0.1 0.1 1</diffuse></material>
+        </visual>
+        <visual name="post_ne">
+          <pose>10 10 1 0 0 0</pose>
+          <geometry><cylinder><radius>0.1</radius><length>2</length></cylinder></geometry>
+          <material><ambient>1 0.5 0 1</ambient><diffuse>1 0.5 0 1</diffuse></material>
+        </visual>
+        <visual name="post_nw">
+          <pose>-10 10 1 0 0 0</pose>
+          <geometry><cylinder><radius>0.1</radius><length>2</length></cylinder></geometry>
+          <material><ambient>1 0.5 0 1</ambient><diffuse>1 0.5 0 1</diffuse></material>
+        </visual>
+        <visual name="post_se">
+          <pose>10 -10 1 0 0 0</pose>
+          <geometry><cylinder><radius>0.1</radius><length>2</length></cylinder></geometry>
+          <material><ambient>1 0.5 0 1</ambient><diffuse>1 0.5 0 1</diffuse></material>
+        </visual>
+        <visual name="post_sw">
+          <pose>-10 -10 1 0 0 0</pose>
+          <geometry><cylinder><radius>0.1</radius><length>2</length></cylinder></geometry>
+          <material><ambient>1 0.5 0 1</ambient><diffuse>1 0.5 0 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Person walking a 12 m square (1 m/s) around the centre of the protected area.
+         Each corner has two waypoints one second apart so the actor turns on the spot. -->
+    <actor name="intruder">
+      <skin>
+        <filename>https://fuel.gazebosim.org/1.0/Mingfei/models/actor/tip/files/meshes/walk.dae</filename>
+        <scale>1.0</scale>
+      </skin>
+      <animation name="walking">
+        <filename>https://fuel.gazebosim.org/1.0/Mingfei/models/actor/tip/files/meshes/walk.dae</filename>
+        <interpolate_x>true</interpolate_x>
+      </animation>
+      <script>
+        <loop>true</loop>
+        <auto_start>true</auto_start>
+        <trajectory id="0" type="walking">
+          <waypoint><time>0</time><pose>-6 54 1.0 0 0 0</pose></waypoint>
+          <waypoint><time>12</time><pose>6 54 1.0 0 0 0</pose></waypoint>
+          <waypoint><time>13</time><pose>6 54 1.0 0 0 1.5708</pose></waypoint>
+          <waypoint><time>25</time><pose>6 66 1.0 0 0 1.5708</pose></waypoint>
+          <waypoint><time>26</time><pose>6 66 1.0 0 0 3.1416</pose></waypoint>
+          <waypoint><time>38</time><pose>-6 66 1.0 0 0 3.1416</pose></waypoint>
+          <waypoint><time>39</time><pose>-6 66 1.0 0 0 4.7124</pose></waypoint>
+          <waypoint><time>51</time><pose>-6 54 1.0 0 0 4.7124</pose></waypoint>
+          <waypoint><time>52</time><pose>-6 54 1.0 0 0 6.2832</pose></waypoint>
+        </trajectory>
+      </script>
+    </actor>
+
+    <include>
+      <uri>model://iris_with_gimbal</uri>
+      <pose degrees="true">0 0 0.195 0 0 90</pose>
+    </include>
+
+  </world>
+</sdf>

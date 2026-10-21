@@ -1,0 +1,9 @@
+mavlink:
+  # SITL exposes SERIAL1 on TCP 5762; on the real drone this was the Pi on TELEM2.
+  connection: tcp:127.0.0.1:5762
+  heartbeat_timeout_s: 30
+
+mission:
+  # MISSION_ITEM_REACHED seq that starts detection.
+  # seq 0 = home, seq 1 = TAKEOFF, seq 2 = first patrol waypoint.
+  trigger_seq: 2

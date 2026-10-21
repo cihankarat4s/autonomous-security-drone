@@ -48,5 +48,6 @@ runs/
 # Build files
 build/
 dist/
+*.egg-info/
 Debug/
 Release/

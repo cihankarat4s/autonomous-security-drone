@@ -16,10 +16,15 @@ detection:
   model: yolov8n.pt          # COCO weights, downloaded on first use
   confidence: 0.4            # thesis value
   classes: [0]               # COCO "person"
-  image_size: 640
+  # Measured on the WP2 Gazebo frame (person ~45 px, seen from above):
+  # 640 found nothing at 0.4, 1280 found the person at 0.80. A larger
+  # network input gives the small target more feature-map cells.
+  image_size: 1280
   device: null               # null = GPU if available, else CPU
-  equalize: true             # histogram equalisation on Y (thesis)
-  sharpen: true              # sharpening kernel (thesis)
+  # Thesis enhancement for the low-light NoIR camera. Off in simulation:
+  # on clean renders it made YOLO box the person's shadow as well.
+  equalize: false            # histogram equalisation on Y
+  sharpen: false             # sharpening kernel
   snapshot_dir: media/images # first annotated detection is saved here
 
 alert:

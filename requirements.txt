@@ -2,4 +2,5 @@ pymavlink
 PyYAML
 pytest
 numpy
-opencv-python-headless
+opencv-python
+ultralytics

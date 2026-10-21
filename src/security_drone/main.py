@@ -201,7 +201,8 @@ def main():
     det = config["detection"]
     detector = PersonDetector(det["model"], det["confidence"], det["classes"],
                               det["image_size"], det["device"])
-    log.info("Loaded %s", det["model"])
+    detector.warm_up()
+    log.info("Loaded and warmed up %s", det["model"])
     camera = GazeboCamera(config["camera"]["gazebo_topic"])
     camera.start()
 

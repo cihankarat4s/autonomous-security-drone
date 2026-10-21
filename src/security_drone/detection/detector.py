@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 import cv2
+import numpy as np
 
 
 @dataclass(frozen=True)
@@ -25,6 +26,10 @@ class PersonDetector:
         self.classes = list(classes)
         self.image_size = image_size
         self.device = device
+
+    def warm_up(self, height=480, width=640):
+        """Run one blank frame so CUDA setup doesn't delay the first real one."""
+        self.detect(np.zeros((height, width, 3), dtype=np.uint8))
 
     def detect(self, frame):
         result = self.model.predict(

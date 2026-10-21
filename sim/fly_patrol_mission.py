@@ -19,6 +19,7 @@ import time
 from pymavlink import mavutil
 
 from security_drone.mavlink.commands import CommandFailed, send_command, set_message_interval
+from security_drone.mavlink.connection import connect
 
 mavlink = mavutil.mavlink
 
@@ -102,11 +103,8 @@ def main():
     args = parser.parse_args()
 
     # Acts like a ground station: system 255, Mission Planner component id.
-    master = mavutil.mavlink_connection(
-        args.connection, source_system=255,
-        source_component=mavlink.MAV_COMP_ID_MISSIONPLANNER,
-    )
-    master.wait_heartbeat(timeout=30)
+    master = connect(args.connection, 30, source_system=255,
+                     source_component=mavlink.MAV_COMP_ID_MISSIONPLANNER)
     print(f"Connected to system {master.target_system}")
 
     set_message_interval(master, mavlink.MAVLINK_MSG_ID_GLOBAL_POSITION_INT, 2)

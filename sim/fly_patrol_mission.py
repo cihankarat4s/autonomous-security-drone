@@ -124,12 +124,15 @@ def main():
 
     # Follow the flight until the vehicle disarms after RTL.
     while True:
-        msg = master.recv_match(type=["MISSION_ITEM_REACHED", "HEARTBEAT"],
+        msg = master.recv_match(type=["MISSION_ITEM_REACHED", "HEARTBEAT", "STATUSTEXT"],
                                 blocking=True, timeout=5)
         if msg is None or msg.get_srcSystem() != master.target_system:
             continue
         if msg.get_type() == "MISSION_ITEM_REACHED":
             print(f"Reached item {msg.seq}")
+        elif msg.get_type() == "STATUSTEXT":
+            # Includes the companion's threat messages, routed by the autopilot.
+            print(f"STATUSTEXT from component {msg.get_srcComponent()}: {msg.text}")
         elif (msg.get_srcComponent() == master.target_component
               and not msg.base_mode & mavlink.MAV_MODE_FLAG_SAFETY_ARMED):
             print("Disarmed, mission finished")

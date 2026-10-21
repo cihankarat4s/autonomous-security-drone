@@ -4,10 +4,7 @@
 #   sim/run_gazebo.sh              with GUI
 #   sim/run_gazebo.sh --headless   server only, the camera still renders
 #
-# SITL (second terminal, from ~/ardupilot/ArduCopter; drop --console for headless):
-#   sim_vehicle.py -v ArduCopter -f gazebo-iris --model JSON --console \
-#     --add-param-file=Tools/autotest/default_params/copter.parm \
-#     --add-param-file=Tools/autotest/default_params/gazebo-iris.parm
+# Then start SITL in a second terminal with sim/run_sitl.sh.
 # Restart Gazebo and SITL together: a lone SITL restart can hang the plugin.
 set -euo pipefail
 

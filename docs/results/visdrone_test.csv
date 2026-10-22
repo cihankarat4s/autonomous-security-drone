@@ -1,0 +1,4 @@
+model,imgsz,precision,recall,mAP50,mAP50-95,ms_per_image
+yolov8n.pt,640,0.361,0.088,0.075,0.03,4.2
+yolov8n.pt,960,0.406,0.142,0.13,0.055,7.8
+yolov8n.pt,1280,0.443,0.183,0.176,0.075,14.1

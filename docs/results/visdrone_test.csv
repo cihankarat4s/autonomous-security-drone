@@ -1,4 +1,7 @@
 model,imgsz,precision,recall,mAP50,mAP50-95,ms_per_image
-yolov8n.pt,640,0.361,0.088,0.075,0.03,4.2
-yolov8n.pt,960,0.406,0.142,0.13,0.055,7.8
+yolov8n.pt,640,0.361,0.088,0.075,0.03,3.8
+yolov8n.pt,960,0.406,0.142,0.13,0.055,7.7
 yolov8n.pt,1280,0.443,0.183,0.176,0.075,14.1
+yolov8n_visdrone_person.pt,640,0.472,0.249,0.24,0.091,3.7
+yolov8n_visdrone_person.pt,960,0.59,0.343,0.365,0.145,7.5
+yolov8n_visdrone_person.pt,1280,0.64,0.405,0.438,0.178,13.7

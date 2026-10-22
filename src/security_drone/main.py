@@ -13,6 +13,7 @@ from security_drone.alert.statustext import send_statustext, threat_text
 from security_drone.camera.gazebo_camera import GazeboCamera
 from security_drone.config import DEFAULT_CONFIG_PATH, load_config
 from security_drone.detection.detector import PersonDetector, draw_detections
+from security_drone.detection.frame_log import FrameLog
 from security_drone.detection.worker import DetectionWorker
 from security_drone.mavlink.commands import set_message_interval
 from security_drone.mavlink.connection import connect
@@ -31,16 +32,20 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Security drone companion app")
     parser.add_argument("--config", default=DEFAULT_CONFIG_PATH)
     parser.add_argument("--connection", help="override mavlink.connection")
+    parser.add_argument("--model", help="override detection.model")
+    parser.add_argument("--snapshot-dir", help="override detection.snapshot_dir")
+    parser.add_argument("--frame-log", help="write one CSV row per processed frame here")
     return parser.parse_args()
 
 
 class Companion:
     """Main loop: MAVLink telemetry, trigger waypoint, detection and alarm."""
 
-    def __init__(self, master, config, camera, detector):
+    def __init__(self, master, config, camera, detector, frame_log=None):
         self.master = master
         self.camera = camera
         self.detector = detector
+        self.frame_log = frame_log
         self.detection_config = config["detection"]
         self.watcher = TriggerWatcher(config["mission"]["trigger_seq"])
         self.threat_alarm = ThreatAlarm(config["alert"]["clear_after_s"],
@@ -52,6 +57,8 @@ class Companion:
 
         self.state = None
         self.position = None
+        self.last_reached_seq = None
+        self.detection_started = None
         self.last_heartbeat = time.monotonic()
         self.heartbeat_lost = False
         self.last_position_log = 0.0
@@ -110,6 +117,7 @@ class Companion:
 
         elif msg_type == "MISSION_ITEM_REACHED":
             log.info("Mission item %d reached", msg.seq)
+            self.last_reached_seq = msg.seq
             if self.watcher.on_item_reached(msg.seq):
                 log.info("Trigger waypoint %d reached: start detection", msg.seq)
                 self.start_detection()
@@ -122,6 +130,7 @@ class Companion:
             equalize=self.detection_config["equalize"],
             sharpen_edges=self.detection_config["sharpen"],
         )
+        self.detection_started = time.monotonic()
         self.worker.start()
 
     def stop_detection(self):
@@ -142,6 +151,10 @@ class Companion:
             except queue.Empty:
                 break
             self.inference_times.append(result.inference_s)
+            if self.frame_log is not None:
+                alt = self.position.relative_alt_m if self.position else None
+                self.frame_log.write(now - self.detection_started, self.last_reached_seq,
+                                     alt, result.detections, result.inference_s)
             count = len(result.detections)
             if count:
                 best = max(d.confidence for d in result.detections)
@@ -196,9 +209,13 @@ def main():
     )
     config = load_config(args.config)
     url = args.connection or config["mavlink"]["connection"]
+    det = config["detection"]
+    if args.model:
+        det["model"] = args.model
+    if args.snapshot_dir:
+        det["snapshot_dir"] = args.snapshot_dir
 
     # Load the model before flying: it takes a few seconds.
-    det = config["detection"]
     detector = PersonDetector(det["model"], det["confidence"], det["classes"],
                               det["image_size"], det["device"])
     detector.warm_up()
@@ -215,12 +232,16 @@ def main():
     set_message_interval(master, mavlink.MAVLINK_MSG_ID_GLOBAL_POSITION_INT, 2)
     log.info("GLOBAL_POSITION_INT stream requested (ACK accepted)")
 
-    companion = Companion(master, config, camera, detector)
+    frame_log = FrameLog(args.frame_log) if args.frame_log else None
+    companion = Companion(master, config, camera, detector, frame_log)
     try:
         companion.run()
     except KeyboardInterrupt:
         companion.stop_detection()
         log.info("Stopped")
+    finally:
+        if frame_log is not None:
+            frame_log.close()
 
 
 if __name__ == "__main__":

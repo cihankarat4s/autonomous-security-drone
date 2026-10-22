@@ -2,7 +2,9 @@
 
 VisDrone has 10 classes. Two of them are humans: "pedestrian" (walking or
 standing) and "people" (sitting, lying, riding). Both are merged into class 0
-"person"; vehicles are dropped. Images are symlinked, only labels are rewritten.
+"person"; vehicles are dropped. Images are hard-linked (no extra disk space),
+only labels are rewritten. A symlinked image folder does not work: Ultralytics
+resolves it and then reads the original 10-class labels next to the target.
 Images without any person keep an empty label file, so they act as background
 (negative) images during training.
 
@@ -48,12 +50,15 @@ def build_person_dataset(source, target):
         dst_images = target / "images" / split
         dst_labels = target / "labels" / split
         dst_labels.mkdir(parents=True, exist_ok=True)
-        if not dst_images.exists():
-            dst_images.parent.mkdir(parents=True, exist_ok=True)
-            dst_images.symlink_to(src_images.resolve(), target_is_directory=True)
+        if dst_images.is_symlink():
+            dst_images.unlink()  # left by an earlier version of this script
+        dst_images.mkdir(parents=True, exist_ok=True)
 
         images = boxes = empty = 0
         for image in sorted(src_images.glob("*.jpg")):
+            linked = dst_images / image.name
+            if not linked.exists():
+                linked.hardlink_to(image)
             src_label = source / "labels" / split / (image.stem + ".txt")
             text = src_label.read_text() if src_label.exists() else ""
             labels = to_person_labels(text)

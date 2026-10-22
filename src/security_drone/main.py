@@ -35,17 +35,20 @@ def parse_args():
     parser.add_argument("--model", help="override detection.model")
     parser.add_argument("--snapshot-dir", help="override detection.snapshot_dir")
     parser.add_argument("--frame-log", help="write one CSV row per processed frame here")
+    parser.add_argument("--save-all-detections", action="store_true",
+                        help="save every annotated detection frame, e.g. to inspect false positives")
     return parser.parse_args()
 
 
 class Companion:
     """Main loop: MAVLink telemetry, trigger waypoint, detection and alarm."""
 
-    def __init__(self, master, config, camera, detector, frame_log=None):
+    def __init__(self, master, config, camera, detector, frame_log=None, save_all=False):
         self.master = master
         self.camera = camera
         self.detector = detector
         self.frame_log = frame_log
+        self.save_all = save_all
         self.detection_config = config["detection"]
         self.watcher = TriggerWatcher(config["mission"]["trigger_seq"])
         self.threat_alarm = ThreatAlarm(config["alert"]["clear_after_s"],
@@ -159,7 +162,7 @@ class Companion:
             if count:
                 best = max(d.confidence for d in result.detections)
                 log.info("Detected %d person(s), best confidence %.2f", count, best)
-                self.save_snapshot(result)
+                self.save_snapshot(result, now)
             self.handle_alarm(self.threat_alarm.update(count, now), count)
         self.log_fps(now)
 
@@ -179,15 +182,21 @@ class Companion:
         send_statustext(self.master, text)
         log.info("Sent STATUSTEXT: %s", text)
 
-    def save_snapshot(self, result):
-        """Keep the first annotated detection as evidence, not every frame."""
-        if self.snapshot_saved:
+    def save_snapshot(self, result, now):
+        """Keep the first annotated detection as evidence (or all with save_all)."""
+        if self.snapshot_saved and not self.save_all:
             return
         out_dir = Path(self.detection_config["snapshot_dir"])
         out_dir.mkdir(parents=True, exist_ok=True)
-        path = out_dir / "sim_detection_wp2.png"
+        if self.save_all:
+            # Time since detection start and mission leg, matching the frame log.
+            name = f"det_{now - self.detection_started:06.2f}s_seq{self.last_reached_seq}.png"
+        else:
+            name = "sim_detection_wp2.png"
+        path = out_dir / name
         cv2.imwrite(str(path), draw_detections(result.frame, result.detections))
-        log.info("Saved %s", path)
+        if not self.snapshot_saved:
+            log.info("Saved %s", path)
         self.snapshot_saved = True
 
     def log_fps(self, now):
@@ -233,7 +242,8 @@ def main():
     log.info("GLOBAL_POSITION_INT stream requested (ACK accepted)")
 
     frame_log = FrameLog(args.frame_log) if args.frame_log else None
-    companion = Companion(master, config, camera, detector, frame_log)
+    companion = Companion(master, config, camera, detector, frame_log,
+                          save_all=args.save_all_detections)
     try:
         companion.run()
     except KeyboardInterrupt:

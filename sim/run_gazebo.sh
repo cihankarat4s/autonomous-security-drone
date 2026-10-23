@@ -1,14 +1,45 @@
 #!/usr/bin/env bash
 # Start Gazebo with the patrol world (run inside WSL). Start this first, then SITL.
 #
-#   sim/run_gazebo.sh              with GUI
-#   sim/run_gazebo.sh --headless   server only, the camera still renders
+#   sim/run_gazebo.sh                         with GUI
+#   sim/run_gazebo.sh --headless              server only, the camera still renders
+#   sim/run_gazebo.sh --headless --no-intruder --sun "0.4 -0.6 -0.7"
+#
+# --no-intruder removes the walking person, so every camera frame is a
+# guaranteed negative (used to collect hard negatives such as the drone's own
+# shadow). --sun sets the sun direction, which moves and stretches shadows.
 #
 # Then start SITL in a second terminal with sim/run_sitl.sh.
 # Restart Gazebo and SITL together: a lone SITL restart can hang the plugin.
 set -euo pipefail
 
 WORLD="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/worlds/security_patrol.sdf"
+
+HEADLESS=0
+NO_INTRUDER=0
+SUN=""
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --headless) HEADLESS=1 ;;
+        --no-intruder) NO_INTRUDER=1 ;;
+        --sun) SUN="$2"; shift ;;
+        *) echo "Unknown option $1" >&2; exit 1 ;;
+    esac
+    shift
+done
+
+# Variants are written next to the original so model:// lookups stay the same.
+if [[ $NO_INTRUDER == 1 || -n "$SUN" ]]; then
+    VARIANT="$(dirname "$WORLD")/.security_patrol_variant.sdf"
+    cp "$WORLD" "$VARIANT"
+    if [[ $NO_INTRUDER == 1 ]]; then
+        sed -i '/<actor name="intruder">/,/<\/actor>/d' "$VARIANT"
+    fi
+    if [[ -n "$SUN" ]]; then
+        sed -i "s|<direction>.*</direction>|<direction>$SUN</direction>|" "$VARIANT"
+    fi
+    WORLD="$VARIANT"
+fi
 
 # Finds model://iris_with_gimbal and the ArduPilot plugin.
 export GZ_SIM_RESOURCE_PATH="$HOME/ardupilot_gazebo/models:$HOME/ardupilot_gazebo/worlds:${GZ_SIM_RESOURCE_PATH:-}"
@@ -27,7 +58,7 @@ export MESA_D3D12_DEFAULT_ADAPTER_NAME=NVIDIA
     gz topic -t /model/gimbal/sensor/camera/zoom/cmd_zoom -m gz.msgs.Double -p "data: 1.8"
 ) &
 
-if [[ "${1:-}" == "--headless" ]]; then
+if [[ $HEADLESS == 1 ]]; then
     exec gz sim -v3 -s -r --headless-rendering "$WORLD"
 fi
 exec gz sim -v3 -r "$WORLD"

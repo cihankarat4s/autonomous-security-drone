@@ -129,8 +129,11 @@ def main():
     set_mode(master, "AUTO")
     send_command(master, mavlink.MAV_CMD_MISSION_START, (0, 0))
     print("Mission started")
+    wait_until_disarmed(master)
 
-    # Follow the flight until the vehicle disarms after RTL.
+
+def wait_until_disarmed(master):
+    """Print mission progress until the vehicle disarms after landing."""
     while True:
         msg = master.recv_match(type=["MISSION_ITEM_REACHED", "HEARTBEAT", "STATUSTEXT"],
                                 blocking=True, timeout=5)

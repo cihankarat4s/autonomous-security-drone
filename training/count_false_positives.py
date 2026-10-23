@@ -26,8 +26,10 @@ def main():
         for folder in args.folders:
             images = sorted(folder.expanduser().glob("*.jpg"))
             hit_images = boxes = 0
-            for result in model.predict(images, conf=args.conf, imgsz=args.imgsz, classes=[0],
-                                        stream=True, verbose=False):
+            # One image per call: a list is run as a single batch and fills a 4 GB GPU.
+            for image in images:
+                result = model.predict(image, conf=args.conf, imgsz=args.imgsz, classes=[0],
+                                       verbose=False)[0]
                 n = len(result.boxes)
                 boxes += n
                 hit_images += n > 0

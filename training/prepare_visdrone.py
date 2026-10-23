@@ -10,8 +10,13 @@ Images without any person keep an empty label file, so they act as background
 
     python training/prepare_visdrone.py                     # -> ~/datasets
     python training/prepare_visdrone.py --root /data/sets
+    python training/prepare_visdrone.py --negatives ~/datasets/gazebo_negatives/sun_a ...
+
+--negatives adds person-free images (e.g. Gazebo frames of the drone's own
+shadow) to the train split with empty labels, as hard negatives.
 """
 import argparse
+import shutil
 from pathlib import Path
 
 import yaml
@@ -79,19 +84,36 @@ def build_person_dataset(source, target):
     return stats
 
 
+def add_negatives(target, folders):
+    """Copy person-free images into the train split with empty label files."""
+    added = 0
+    for folder in folders:
+        for image in sorted(folder.glob("*.jpg")):
+            # Copied, not linked: on Colab the source is on Drive, another filesystem.
+            shutil.copy2(image, target / "images" / "train" / image.name)
+            (target / "labels" / "train" / (image.stem + ".txt")).write_text("")
+            added += 1
+    return added
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--root", type=Path, default=Path.home() / "datasets")
+    parser.add_argument("--negatives", type=Path, nargs="*", default=[],
+                        help="folders of person-free images to add to train")
     args = parser.parse_args()
 
     root = args.root.expanduser()
     root.mkdir(parents=True, exist_ok=True)
     source = download_visdrone(root)
-    target = root / "visdrone_person"
+    target = root / ("visdrone_person_neg" if args.negatives else "visdrone_person")
     stats = build_person_dataset(source, target)
 
     for split, (images, boxes, empty) in stats.items():
         print(f"{split:5s}: {images} images, {boxes} person boxes, {empty} without person")
+    if args.negatives:
+        added = add_negatives(target, [f.expanduser() for f in args.negatives])
+        print(f"train: added {added} hard negatives")
     print(f"Dataset file: {target / 'data.yaml'}")
 
 

@@ -3,7 +3,7 @@
 #
 #   sim/run_gazebo.sh                         with GUI
 #   sim/run_gazebo.sh --headless              server only, the camera still renders
-#   sim/run_gazebo.sh --headless --no-intruder --sun "0.4 -0.6 -0.7"
+#   sim/run_gazebo.sh --headless --no-intruder --sun 0.4,-0.6,-0.7
 #
 # --no-intruder removes the walking person, so every camera frame is a
 # guaranteed negative (used to collect hard negatives such as the drone's own
@@ -22,7 +22,8 @@ while [[ $# -gt 0 ]]; do
     case "$1" in
         --headless) HEADLESS=1 ;;
         --no-intruder) NO_INTRUDER=1 ;;
-        --sun) SUN="$2"; shift ;;
+        # Comma-separated, so the value survives Windows -> WSL quoting.
+        --sun) SUN="${2//,/ }"; shift ;;
         *) echo "Unknown option $1" >&2; exit 1 ;;
     esac
     shift

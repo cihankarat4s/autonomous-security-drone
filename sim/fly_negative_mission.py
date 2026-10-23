@@ -7,7 +7,7 @@ landing. Run sim/capture_negatives.py alongside it.
 
     sim/run_gazebo.sh --headless --no-intruder        # then sim/run_sitl.sh
     python sim/capture_negatives.py --name sun_default
-    python sim/fly_negative_mission.py
+    python sim/fly_negative_mission.py                  # --zone urban with --world urban
 """
 import argparse
 
@@ -32,14 +32,28 @@ LEGS = [
     (0, 0, 8, 0),
 ]
 
+# Urban world (run_gazebo.sh --world urban): stay in the person-free training
+# zone south of home (houses, bus, parking lot, barriers), never over the test
+# zone around the protected area. Altitudes clear the houses and trees.
+URBAN_LEGS = [
+    (-20, 0, 8, 5),
+    (-45, 2, 10, 0),
+    (-58, -45, 14, 5),   # parking lot
+    (-30, -60, 18, 0),
+    (-8, -40, 22, 5),    # house
+    (-45, 30, 25, 0),    # house across the road
+    (-40, 14, 12, 5),    # bus
+    (-10, 4, 10, 0),
+]
 
-def build_mission(home_lat, home_lon):
+
+def build_mission(home_lat, home_lon, legs=LEGS):
     rel = mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT_INT
     items = [
         (mavlink.MAV_FRAME_GLOBAL_INT, mavlink.MAV_CMD_NAV_WAYPOINT, 0, home_lat, home_lon, 0),
-        (rel, mavlink.MAV_CMD_NAV_TAKEOFF, 0, 0, 0, LEGS[0][2]),
+        (rel, mavlink.MAV_CMD_NAV_TAKEOFF, 0, 0, 0, legs[0][2]),
     ]
-    for north, east, alt, hover_s in LEGS:
+    for north, east, alt, hover_s in legs:
         lat, lon = offset(home_lat, home_lon, north, east)
         items.append((rel, mavlink.MAV_CMD_NAV_WAYPOINT, 0, lat, lon, alt))
         if hover_s:
@@ -51,13 +65,16 @@ def build_mission(home_lat, home_lon):
 def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--connection", default="tcp:127.0.0.1:5763")
+    parser.add_argument("--zone", choices=["flat", "urban"], default="flat",
+                        help="urban: fly the training zone of the urban world")
     args = parser.parse_args()
 
     master = connect(args.connection, 30, source_system=255,
                      source_component=mavlink.MAV_COMP_ID_MISSIONPLANNER)
     set_message_interval(master, mavlink.MAVLINK_MSG_ID_GLOBAL_POSITION_INT, 2)
     pos = master.recv_match(type="GLOBAL_POSITION_INT", blocking=True, timeout=10)
-    items = build_mission(pos.lat / 1e7, pos.lon / 1e7)
+    legs = URBAN_LEGS if args.zone == "urban" else LEGS
+    items = build_mission(pos.lat / 1e7, pos.lon / 1e7, legs)
     upload_mission(master, items)
     print(f"Mission uploaded ({len(items)} items)")
 

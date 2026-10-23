@@ -4,6 +4,10 @@
 #   sim/run_gazebo.sh                         with GUI
 #   sim/run_gazebo.sh --headless              server only, the camera still renders
 #   sim/run_gazebo.sh --headless --no-intruder --sun 0.4,-0.6,-0.7
+#   sim/run_gazebo.sh --headless --world urban
+#
+# --world urban loads security_patrol_urban.sdf (textured ground, trees,
+# buildings, vehicles, several people) instead of the flat default world.
 #
 # --no-intruder removes the walking person, so every camera frame is a
 # guaranteed negative (used to collect hard negatives such as the drone's own
@@ -13,7 +17,8 @@
 # Restart Gazebo and SITL together: a lone SITL restart can hang the plugin.
 set -euo pipefail
 
-WORLD="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/worlds/security_patrol.sdf"
+SIM_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+WORLD="$SIM_DIR/worlds/security_patrol.sdf"
 
 HEADLESS=0
 NO_INTRUDER=0
@@ -21,6 +26,7 @@ SUN=""
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --headless) HEADLESS=1 ;;
+        --world) WORLD="$SIM_DIR/worlds/security_patrol_$2.sdf"; shift ;;
         --no-intruder) NO_INTRUDER=1 ;;
         # Comma-separated, so the value survives Windows -> WSL quoting.
         --sun) SUN="${2//,/ }"; shift ;;
@@ -42,8 +48,13 @@ if [[ $NO_INTRUDER == 1 || -n "$SUN" ]]; then
     WORLD="$VARIANT"
 fi
 
-# Finds model://iris_with_gimbal and the ArduPilot plugin.
-export GZ_SIM_RESOURCE_PATH="$HOME/ardupilot_gazebo/models:$HOME/ardupilot_gazebo/worlds:${GZ_SIM_RESOURCE_PATH:-}"
+# The urban ground texture is generated, not stored in git.
+if [[ ! -f "$SIM_DIR/models/urban_ground/materials/textures/ground.jpg" ]]; then
+    "$HOME/venvs/security-drone/bin/python" "$SIM_DIR/make_ground_texture.py"
+fi
+
+# Finds model://iris_with_gimbal, model://urban_ground and the ArduPilot plugin.
+export GZ_SIM_RESOURCE_PATH="$SIM_DIR/models:$HOME/ardupilot_gazebo/models:$HOME/ardupilot_gazebo/worlds:${GZ_SIM_RESOURCE_PATH:-}"
 export GZ_SIM_SYSTEM_PLUGIN_PATH="$HOME/ardupilot_gazebo/build:${GZ_SIM_SYSTEM_PLUGIN_PATH:-}"
 # Render on the NVIDIA GPU, not the Intel iGPU.
 export MESA_D3D12_DEFAULT_ADAPTER_NAME=NVIDIA

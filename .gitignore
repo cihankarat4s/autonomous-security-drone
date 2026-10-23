@@ -54,3 +54,4 @@ Release/
 
 # Generated Gazebo world variants (sim/run_gazebo.sh)
 sim/worlds/.security_patrol_variant.sdf
+sim/models/urban_ground/materials/textures/ground.jpg

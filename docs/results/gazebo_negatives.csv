@@ -1,0 +1,9 @@
+model,folder,split,images,images_with_false_positive,rate,boxes
+yolov8n.pt,sun_a,train,228,2,0.009,2
+yolov8n.pt,sun_b,train,229,0,0.000,0
+yolov8n.pt,sun_c,train,226,10,0.044,10
+yolov8n.pt,sun_d,test,220,10,0.045,10
+yolov8n_visdrone_person.pt,sun_a,train,228,5,0.022,7
+yolov8n_visdrone_person.pt,sun_b,train,229,0,0.000,0
+yolov8n_visdrone_person.pt,sun_c,train,226,41,0.181,53
+yolov8n_visdrone_person.pt,sun_d,test,220,34,0.155,46

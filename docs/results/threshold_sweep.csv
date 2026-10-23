@@ -1,0 +1,11 @@
+model,conf,fp_frames_sun_d,mean_boxes_urban_hover,frames_with_2plus_urban_hover
+yolov8n_visdrone_person.pt,0.20,0.336,2.13,0.774
+yolov8n_visdrone_person.pt,0.25,0.295,1.89,0.698
+yolov8n_visdrone_person.pt,0.30,0.264,1.74,0.623
+yolov8n_visdrone_person.pt,0.35,0.191,1.60,0.566
+yolov8n_visdrone_person.pt,0.40,0.155,1.49,0.472
+yolov8n_visdrone_person_neg.pt,0.20,0.000,1.79,0.585
+yolov8n_visdrone_person_neg.pt,0.25,0.000,1.62,0.547
+yolov8n_visdrone_person_neg.pt,0.30,0.000,1.40,0.396
+yolov8n_visdrone_person_neg.pt,0.35,0.000,1.28,0.302
+yolov8n_visdrone_person_neg.pt,0.40,0.000,1.26,0.283

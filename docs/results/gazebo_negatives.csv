@@ -11,3 +11,9 @@ yolov8n.pt,urban_a,train,356,7,0.020,7
 yolov8n.pt,urban_c,train,358,11,0.031,12
 yolov8n_visdrone_person.pt,urban_a,train,356,16,0.045,23
 yolov8n_visdrone_person.pt,urban_c,train,358,6,0.017,6
+yolov8n_visdrone_person_neg.pt,sun_a,train,228,0,0.000,0
+yolov8n_visdrone_person_neg.pt,sun_b,train,229,0,0.000,0
+yolov8n_visdrone_person_neg.pt,sun_c,train,226,0,0.000,0
+yolov8n_visdrone_person_neg.pt,sun_d,test,220,0,0.000,0
+yolov8n_visdrone_person_neg.pt,urban_a,train,356,1,0.003,1
+yolov8n_visdrone_person_neg.pt,urban_c,train,358,0,0.000,0

@@ -1,6 +1,8 @@
-"""Save camera frames during a flight in the person-free world.
+"""Save camera frames during a flight.
 
-Every saved frame is a negative: no person exists in the world. Frames are
+In the person-free world every saved frame is a negative. The file name
+carries the altitude and the current mission item (seq), so the hover of a
+patrol flight can be picked out later. Frames are
 taken at a fixed interval while the vehicle is armed and above --min-alt, so
 consecutive images are not near-duplicates. Uses the companion's port (5762),
 so do not run the companion at the same time.
@@ -37,6 +39,7 @@ def main():
     camera.start()
     master = connect(args.connection, 30)
     set_message_interval(master, mavlink.MAVLINK_MSG_ID_GLOBAL_POSITION_INT, 5)
+    set_message_interval(master, mavlink.MAVLINK_MSG_ID_MISSION_CURRENT, 2)
 
     out_dir = args.root / args.name
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -44,16 +47,19 @@ def main():
 
     armed = was_armed = False
     alt = 0.0
+    seq = 0
     last_save = 0.0
     saved = 0
     while not (was_armed and not armed):
-        msg = master.recv_match(type=["HEARTBEAT", "GLOBAL_POSITION_INT"],
+        msg = master.recv_match(type=["HEARTBEAT", "GLOBAL_POSITION_INT", "MISSION_CURRENT"],
                                 blocking=True, timeout=0.1)
         if msg is not None and msg.get_srcSystem() == master.target_system \
                 and msg.get_srcComponent() == master.target_component:
             if msg.get_type() == "HEARTBEAT":
                 armed = parse_heartbeat(msg).armed
                 was_armed = was_armed or armed
+            elif msg.get_type() == "MISSION_CURRENT":
+                seq = msg.seq
             else:
                 alt = parse_position(msg).relative_alt_m
 
@@ -61,7 +67,7 @@ def main():
         if armed and alt >= args.min_alt and now - last_save >= args.period:
             frame = camera.read()
             if frame is not None:
-                path = out_dir / f"{args.name}_{saved:04d}_alt{alt:04.1f}.jpg"
+                path = out_dir / f"{args.name}_{saved:04d}_alt{alt:04.1f}_seq{seq}.jpg"
                 cv2.imwrite(str(path), frame)
                 saved += 1
                 last_save = now

@@ -18,7 +18,7 @@ This started as my undergraduate graduation project (TÜBİTAK 2209-A supported)
 
 **Hardware:** Pixhawk, Raspberry Pi 5 (8 GB), Camera Module 3 NoIR, 3DR 433 MHz telemetry, 3S 6200 mAh Li-Po, MINI560 step-down regulator, buzzer, FlySky FS-i6X.
 
-The original companion script and the custom-trained detection model were not preserved. Earlier 2024 prototypes (DroneKit flight helpers, OpenCV STOP-sign and face tracking) are available in the initial commit `3ba9fc8`.
+The original companion script and the custom-trained detection model were not preserved. Earlier 2024 prototypes (DroneKit flight helpers, OpenCV STOP-sign and face tracking) are available in the initial commit `dbd549e`.
 
 ## Rebuild in simulation
 

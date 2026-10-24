@@ -36,8 +36,6 @@ The original custom model was not preserved. The rebuilt version uses YOLOv8n fi
 
 ## Repository structure
 
-- `docs/thesis/` – undergraduate project reports
-- `docs/research_project/` – TÜBİTAK 2209-A project proposal
 - `media/images/` – wiring diagram and test footage frame
 
 ## Safety

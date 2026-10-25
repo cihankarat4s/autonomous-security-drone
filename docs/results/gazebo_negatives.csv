@@ -17,3 +17,5 @@ yolov8n_visdrone_person_neg.pt,sun_c,train,226,0,0.000,0
 yolov8n_visdrone_person_neg.pt,sun_d,test,220,0,0.000,0
 yolov8n_visdrone_person_neg.pt,urban_a,train,356,1,0.003,1
 yolov8n_visdrone_person_neg.pt,urban_c,train,358,0,0.000,0
+yolo26n_visdrone_person_neg.pt,sun_d,test,220,0,0.000,0
+yolo11n_visdrone_person_neg.pt,sun_d,test,220,0,0.000,0

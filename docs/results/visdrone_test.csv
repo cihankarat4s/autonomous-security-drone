@@ -8,3 +8,9 @@ yolov8n_visdrone_person.pt,1280,0.64,0.405,0.438,0.178,13.7
 yolov8n_visdrone_person_neg.pt,640,0.478,0.243,0.237,0.09,4.0
 yolov8n_visdrone_person_neg.pt,960,0.57,0.348,0.363,0.144,7.7
 yolov8n_visdrone_person_neg.pt,1280,0.634,0.406,0.437,0.178,13.9
+yolo26n_visdrone_person_neg.pt,640,0.485,0.271,0.266,0.1,5.3
+yolo26n_visdrone_person_neg.pt,960,0.592,0.365,0.386,0.153,7.8
+yolo26n_visdrone_person_neg.pt,1280,0.644,0.42,0.455,0.185,14.2
+yolo11n_visdrone_person_neg.pt,640,0.467,0.257,0.246,0.093,4.9
+yolo11n_visdrone_person_neg.pt,960,0.585,0.35,0.37,0.147,7.8
+yolo11n_visdrone_person_neg.pt,1280,0.631,0.407,0.44,0.182,14.4

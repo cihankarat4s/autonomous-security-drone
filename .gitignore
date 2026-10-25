@@ -33,6 +33,7 @@ terrain/
 *.pt
 *.onnx
 *.engine
+*_ncnn_model/
 runs/
 
 # Large/raw media

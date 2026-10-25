@@ -12,9 +12,34 @@ class Detection:
     y2: float
     confidence: float
 
+    @property
+    def area(self):
+        return max(0.0, self.x2 - self.x1) * max(0.0, self.y2 - self.y1)
+
+
+def merge_overlapping(detections, overlap=0.5):
+    """Keep one box per person: drop boxes that mostly cover a kept box.
+
+    YOLO26 has no NMS step and can put several boxes on one person (a small
+    box on the body inside larger ones with the shadow). Their IoU is low, so
+    plain NMS would keep them; instead a box is dropped when its intersection
+    with an already kept, more confident box is more than `overlap` of the
+    smaller of the two. Two people side by side overlap far less than that.
+    """
+    kept = []
+    for det in sorted(detections, key=lambda d: d.confidence, reverse=True):
+        for k in kept:
+            iw = min(det.x2, k.x2) - max(det.x1, k.x1)
+            ih = min(det.y2, k.y2) - max(det.y1, k.y1)
+            if iw > 0 and ih > 0 and iw * ih > overlap * min(det.area, k.area):
+                break
+        else:
+            kept.append(det)
+    return kept
+
 
 class PersonDetector:
-    """YOLOv8 (Ultralytics) restricted to the person class(es)."""
+    """YOLO (Ultralytics) restricted to the person class(es)."""
 
     def __init__(self, model_path, confidence, classes=(0,), image_size=640, device=None):
         # Imported here so tests and tools that never detect skip loading torch.
@@ -40,10 +65,10 @@ class PersonDetector:
             device=self.device,
             verbose=False,
         )[0]
-        return [
+        return merge_overlapping([
             Detection(*box.xyxy[0].tolist(), float(box.conf[0]))
             for box in result.boxes
-        ]
+        ])
 
 
 def draw_detections(frame, detections):

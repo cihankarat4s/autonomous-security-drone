@@ -24,6 +24,8 @@ from pathlib import Path
 
 from ultralytics import YOLO
 
+from security_drone.detection.detector import Detection, merge_overlapping
+
 
 def detections(model, images, imgsz, low):
     """Per image, (confidence, xyxy) of all person boxes above the lowest threshold."""
@@ -34,27 +36,11 @@ def detections(model, images, imgsz, low):
     return out
 
 
-def count_people(boxes, threshold, overlap=0.5):
-    """Boxes at or above threshold, with nested boxes counted once.
-
-    The model sometimes puts a small box on a person inside a larger box on
-    the same person plus shadow. NMS keeps both (low IoU), so a box that
-    covers more than `overlap` of a smaller kept box is the same person.
-    """
-    kept = []
-    for conf, (x1, y1, x2, y2) in sorted(boxes, reverse=True):
-        if conf < threshold:
-            break
-        area = (x2 - x1) * (y2 - y1)
-        for kx1, ky1, kx2, ky2 in kept:
-            iw = min(x2, kx2) - max(x1, kx1)
-            ih = min(y2, ky2) - max(y1, ky1)
-            small = min(area, (kx2 - kx1) * (ky2 - ky1))
-            if iw > 0 and ih > 0 and iw * ih > overlap * small:
-                break
-        else:
-            kept.append((x1, y1, x2, y2))
-    return len(kept)
+def count_people(boxes, threshold):
+    """Boxes at or above threshold, with nested boxes on one person counted
+    once, the same way the companion's detector merges them."""
+    return len(merge_overlapping([Detection(*xyxy, conf) for conf, xyxy in boxes
+                                  if conf >= threshold]))
 
 
 def main():

@@ -34,7 +34,7 @@ detection:
   # on clean renders it made YOLO box the person's shadow as well.
   equalize: false            # histogram equalisation on Y
   sharpen: false             # sharpening kernel
-  snapshot_dir: media/images # first annotated detection is saved here
+  snapshot_dir: logs/snapshots # first annotated detection is saved here (not in git)
 
 alert:
   clear_after_s: 3           # alarm off after nobody is seen for this long

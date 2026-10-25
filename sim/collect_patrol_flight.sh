@@ -42,5 +42,5 @@ sleep 3
 "$PY" sim/capture_negatives.py --name "$NAME" --root "$HOME/datasets/gazebo_urban" --period 0.25 &
 CAPTURE=$!
 sleep 8
-timeout 900 "$PY" sim/fly_patrol_mission.py
+timeout 900 "$PY" sim/fly_patrol_mission.py --hover 10
 wait_pid "frame capture" 60 "$CAPTURE"

@@ -7,6 +7,12 @@ mission:
   # MISSION_ITEM_REACHED seq that starts detection.
   # seq 0 = home, seq 1 = TAKEOFF, seq 2 = first patrol waypoint.
   trigger_seq: 2
+  # Patrol over the area for this long, then the companion sends RTL (thesis:
+  # "when the mission duration ends ... the Raspberry Pi sends an RTL").
+  # Thesis flight time: 6200 mAh / 37.8 A = ~10 min. Takeoff, the flight out,
+  # the return and landing take ~1.5 min; 6 min leaves ~25% in reserve.
+  # The Pixhawk's own low-battery failsafe stays the last line of defence.
+  patrol_time_s: 360
 
 camera:
   # Gazebo camera of the gimbal; the world name is part of the topic.

@@ -15,9 +15,9 @@ from security_drone.config import DEFAULT_CONFIG_PATH, load_config
 from security_drone.detection.detector import PersonDetector, draw_detections
 from security_drone.detection.frame_log import FrameLog
 from security_drone.detection.worker import DetectionWorker
-from security_drone.mavlink.commands import set_message_interval
+from security_drone.mavlink.commands import CommandFailed, send_command, set_message_interval
 from security_drone.mavlink.connection import connect
-from security_drone.mavlink.mission import TriggerWatcher
+from security_drone.mavlink.mission import PatrolTimer, TriggerWatcher
 from security_drone.mavlink.telemetry import parse_heartbeat, parse_position
 
 mavlink = mavutil.mavlink
@@ -26,6 +26,9 @@ log = logging.getLogger("security_drone")
 HEARTBEAT_LOST_S = 3.0
 POSITION_LOG_PERIOD_S = 5.0
 FPS_LOG_PERIOD_S = 5.0
+# Flight modes that take the vehicle away from the protected area. A ground
+# station switching to one of them ends the patrol (the thesis "return" command).
+RETURN_MODES = {"RTL", "LAND", "SMART_RTL"}
 
 
 def parse_args():
@@ -33,6 +36,7 @@ def parse_args():
     parser.add_argument("--config", default=DEFAULT_CONFIG_PATH)
     parser.add_argument("--connection", help="override mavlink.connection")
     parser.add_argument("--model", help="override detection.model")
+    parser.add_argument("--patrol-time", type=float, help="override mission.patrol_time_s")
     parser.add_argument("--snapshot-dir", help="override detection.snapshot_dir")
     parser.add_argument("--frame-log", help="write one CSV row per processed frame here")
     parser.add_argument("--save-all-detections", action="store_true",
@@ -51,6 +55,7 @@ class Companion:
         self.save_all = save_all
         self.detection_config = config["detection"]
         self.watcher = TriggerWatcher(config["mission"]["trigger_seq"])
+        self.patrol = PatrolTimer(config["mission"]["patrol_time_s"])
         self.threat_alarm = ThreatAlarm(config["alert"]["clear_after_s"],
                                         config["alert"]["notify_every_s"])
         self.buzzer = LogAlarm()
@@ -81,6 +86,7 @@ class Companion:
             if msg is not None:
                 self.handle_message(msg, now)
             self.handle_results(now)
+            self.check_patrol(now)
 
     def check_heartbeat(self, now):
         if now - self.last_heartbeat > HEARTBEAT_LOST_S and not self.heartbeat_lost:
@@ -107,8 +113,14 @@ class Companion:
                          "ARMED" if new_state.armed else "disarmed")
                 # Landed: stop looking and be ready for the next flight.
                 if self.state is not None and self.state.armed and not new_state.armed:
+                    self.patrol.stop()
                     self.stop_detection()
                     self.watcher.reset()
+                # Returned from the ground station before the patrol time was up.
+                elif self.patrol.running and new_state.mode in RETURN_MODES:
+                    log.info("Mode changed to %s: patrol ended", new_state.mode)
+                    self.patrol.stop()
+                    self.stop_detection()
                 self.state = new_state
 
         elif msg_type == "GLOBAL_POSITION_INT":
@@ -122,8 +134,24 @@ class Companion:
             log.info("Mission item %d reached", msg.seq)
             self.last_reached_seq = msg.seq
             if self.watcher.on_item_reached(msg.seq):
-                log.info("Trigger waypoint %d reached: start detection", msg.seq)
+                log.info("Trigger waypoint %d reached: start detection, patrol for %.0f s",
+                         msg.seq, self.patrol.duration_s)
                 self.start_detection()
+                self.patrol.start(now)
+
+    def check_patrol(self, now):
+        """Send RTL once the patrol time is up; retried until the autopilot accepts."""
+        if not self.patrol.expired(now):
+            return
+        try:
+            send_command(self.master, mavlink.MAV_CMD_NAV_RETURN_TO_LAUNCH)
+        except CommandFailed as exc:
+            log.error("RTL not accepted, retrying: %s", exc)
+            return
+        log.info("Patrol time up: RTL accepted")
+        send_statustext(self.master, "Patrol done, returning home", mavlink.MAV_SEVERITY_NOTICE)
+        self.patrol.stop()
+        self.stop_detection()
 
     def start_detection(self):
         if self.worker is not None:
@@ -221,6 +249,8 @@ def main():
     det = config["detection"]
     if args.model:
         det["model"] = args.model
+    if args.patrol_time is not None:
+        config["mission"]["patrol_time_s"] = args.patrol_time
     if args.snapshot_dir:
         det["snapshot_dir"] = args.snapshot_dir
 

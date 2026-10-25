@@ -1,14 +1,29 @@
 """Upload a patrol mission to SITL and fly it in AUTO.
 
-Stands in for Mission Planner during tests, so the companion app can be
-checked against a real mission. Mission layout (same as the thesis tests):
+Stands in for Mission Planner during tests. The mission follows the thesis:
+take off, fly to the protected area, patrol it until the mission time is up,
+return home. The companion app ends the patrol by sending RTL.
 
     seq 0  home (ArduPilot overwrites it)
     seq 1  TAKEOFF 15 m
-    seq 2  WAYPOINT 60 m north        <- protected area, trigger_seq: 2
-    seq 3  LOITER_TIME 10 s there     (hover while the camera looks)
-    seq 4  WAYPOINT 60 m north-east
-    seq 5  RTL
+    seq 2  WAYPOINT area centre, 60 m north    <- trigger_seq: 2
+    seq 3-6  WAYPOINTs: square lap around the centre
+    seq 7  DO_JUMP to seq 3, --max-laps times
+    seq 8  RTL, only if the companion never sent one
+
+The trigger waypoint must be followed by a NAV item: with a DO_CHANGE_SPEED
+right after it, ArduPilot sent MISSION_ITEM_REACHED with seq 3 for it (while
+its own STATUSTEXT said "Reached command #2"), and detection never started.
+The corners are only 10 m apart, so the vehicle slows down at each of them
+anyway (~6 s per leg) and needs no speed limit.
+
+--hover S flies the earlier test layout instead (WAYPOINT, LOITER_TIME S,
+WAYPOINT north-east, RTL), which sim/collect_patrol_flight.sh used to record
+the hover frames (*_seq3.jpg) of the datasets in docs/results/.
+
+The camera sees ~26 x 19.5 m from 15 m and the area is 20 x 20 m. Flying the
+square 5 m off the centre keeps the centre in view on every leg and each edge
+in view on at least one leg, and the area is covered once per lap (~25 s).
 
 Usage (inside WSL, SITL running):
     python sim/fly_patrol_mission.py --connection tcp:127.0.0.1:5763
@@ -25,8 +40,12 @@ from security_drone.mavlink.connection import connect
 mavlink = mavutil.mavlink
 
 TAKEOFF_ALT_M = 15
-# Hover over the protected area so the camera has time to look around.
-PATROL_HOLD_S = 10
+AREA_NORTH_M = 60     # centre of the protected area, from home
+LAP_OFFSET_M = 5      # half side of the patrol square
+# Upper bound on laps if the companion never ends the patrol: ~12 min at
+# ~25 s a lap, longer than the battery. The Pixhawk's battery failsafe and
+# this final RTL are the backups; the companion's RTL is the normal end.
+MAX_LAPS = 30
 EARTH_M_PER_DEG = 111_320
 
 
@@ -37,21 +56,39 @@ def offset(lat, lon, north_m, east_m):
     return lat + dlat, lon + dlon
 
 
-def build_mission(home_lat, home_lon):
+def build_mission(home_lat, home_lon, max_laps=MAX_LAPS):
     rel = mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT_INT
-    wp1 = offset(home_lat, home_lon, 60, 0)
-    wp2 = offset(home_lat, home_lon, 60, 60)
+    centre = offset(home_lat, home_lon, AREA_NORTH_M, 0)
+    d = LAP_OFFSET_M
+    # North-east, north-west, south-west, south-east corners.
+    corners = [offset(*centre, n, e) for n, e in ((d, d), (d, -d), (-d, -d), (-d, d))]
+    first_corner = 3
+    # (frame, command, param1, param2, lat, lon, alt)
+    return [
+        (mavlink.MAV_FRAME_GLOBAL_INT, mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, home_lat, home_lon, 0),
+        (rel, mavlink.MAV_CMD_NAV_TAKEOFF, 0, 0, 0, 0, TAKEOFF_ALT_M),
+        (rel, mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, *centre, TAKEOFF_ALT_M),
+        *[(rel, mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, *c, TAKEOFF_ALT_M) for c in corners],
+        # param1 = item to jump to, param2 = how many more times.
+        (rel, mavlink.MAV_CMD_DO_JUMP, first_corner, max_laps - 1, 0, 0, 0),
+        (rel, mavlink.MAV_CMD_NAV_RETURN_TO_LAUNCH, 0, 0, 0, 0, 0),
+    ]
+
+
+def build_hover_mission(home_lat, home_lon, hover_s):
+    rel = mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT_INT
+    wp1 = offset(home_lat, home_lon, AREA_NORTH_M, 0)
+    wp2 = offset(home_lat, home_lon, AREA_NORTH_M, 60)
     # The hold is a separate item: a waypoint with its own hold time only
     # reports MISSION_ITEM_REACHED when the hold ends, too late to start
     # detection.
-    # (frame, command, param1, lat, lon, alt)
     return [
-        (mavlink.MAV_FRAME_GLOBAL_INT, mavlink.MAV_CMD_NAV_WAYPOINT, 0, home_lat, home_lon, 0),
-        (rel, mavlink.MAV_CMD_NAV_TAKEOFF, 0, 0, 0, TAKEOFF_ALT_M),
-        (rel, mavlink.MAV_CMD_NAV_WAYPOINT, 0, *wp1, TAKEOFF_ALT_M),
-        (rel, mavlink.MAV_CMD_NAV_LOITER_TIME, PATROL_HOLD_S, *wp1, TAKEOFF_ALT_M),
-        (rel, mavlink.MAV_CMD_NAV_WAYPOINT, 0, *wp2, TAKEOFF_ALT_M),
-        (rel, mavlink.MAV_CMD_NAV_RETURN_TO_LAUNCH, 0, 0, 0, 0),
+        (mavlink.MAV_FRAME_GLOBAL_INT, mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, home_lat, home_lon, 0),
+        (rel, mavlink.MAV_CMD_NAV_TAKEOFF, 0, 0, 0, 0, TAKEOFF_ALT_M),
+        (rel, mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, *wp1, TAKEOFF_ALT_M),
+        (rel, mavlink.MAV_CMD_NAV_LOITER_TIME, hover_s, 0, *wp1, TAKEOFF_ALT_M),
+        (rel, mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, *wp2, TAKEOFF_ALT_M),
+        (rel, mavlink.MAV_CMD_NAV_RETURN_TO_LAUNCH, 0, 0, 0, 0, 0),
     ]
 
 
@@ -72,12 +109,12 @@ def upload_mission(master, items):
             if msg.type != mavlink.MAV_MISSION_ACCEPTED:
                 raise RuntimeError(f"Mission rejected: {msg.type}")
             return
-        frame, command, param1, lat, lon, alt = items[msg.seq]
+        frame, command, param1, param2, lat, lon, alt = items[msg.seq]
         master.mav.mission_item_int_send(
             master.target_system, master.target_component, msg.seq,
             frame, command,
             0, 1,  # current, autocontinue
-            param1, 0, 0, 0,  # param1-4
+            param1, param2, 0, 0,  # param1-4
             int(lat * 1e7), int(lon * 1e7), alt,
             mavlink.MAV_MISSION_TYPE_MISSION,
         )
@@ -107,6 +144,9 @@ def arm_when_ready(master, timeout_s=120):
 def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--connection", default="tcp:127.0.0.1:5763")
+    parser.add_argument("--max-laps", type=int, default=MAX_LAPS)
+    parser.add_argument("--hover", type=float, metavar="S",
+                        help="earlier test layout: hover S seconds, then RTL")
     args = parser.parse_args()
 
     # Acts like a ground station: system 255, Mission Planner component id.
@@ -118,7 +158,10 @@ def main():
     pos = master.recv_match(type="GLOBAL_POSITION_INT", blocking=True, timeout=10)
     home_lat, home_lon = pos.lat / 1e7, pos.lon / 1e7
 
-    items = build_mission(home_lat, home_lon)
+    if args.hover:
+        items = build_hover_mission(home_lat, home_lon, args.hover)
+    else:
+        items = build_mission(home_lat, home_lon, args.max_laps)
     upload_mission(master, items)
     print(f"Mission uploaded ({len(items)} items)")
 
@@ -132,7 +175,7 @@ def main():
     wait_until_disarmed(master)
 
 
-def wait_until_disarmed(master, timeout_s=900):
+def wait_until_disarmed(master, timeout_s=1200):
     """Print mission progress until the vehicle disarms after landing.
 
     Gives up after timeout_s, so a stuck simulation does not hang a run.

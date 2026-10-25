@@ -50,15 +50,15 @@ URBAN_LEGS = [
 def build_mission(home_lat, home_lon, legs=LEGS):
     rel = mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT_INT
     items = [
-        (mavlink.MAV_FRAME_GLOBAL_INT, mavlink.MAV_CMD_NAV_WAYPOINT, 0, home_lat, home_lon, 0),
-        (rel, mavlink.MAV_CMD_NAV_TAKEOFF, 0, 0, 0, legs[0][2]),
+        (mavlink.MAV_FRAME_GLOBAL_INT, mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, home_lat, home_lon, 0),
+        (rel, mavlink.MAV_CMD_NAV_TAKEOFF, 0, 0, 0, 0, legs[0][2]),
     ]
     for north, east, alt, hover_s in legs:
         lat, lon = offset(home_lat, home_lon, north, east)
-        items.append((rel, mavlink.MAV_CMD_NAV_WAYPOINT, 0, lat, lon, alt))
+        items.append((rel, mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, lat, lon, alt))
         if hover_s:
-            items.append((rel, mavlink.MAV_CMD_NAV_LOITER_TIME, hover_s, lat, lon, alt))
-    items.append((rel, mavlink.MAV_CMD_NAV_LAND, 0, home_lat, home_lon, 0))
+            items.append((rel, mavlink.MAV_CMD_NAV_LOITER_TIME, hover_s, 0, lat, lon, alt))
+    items.append((rel, mavlink.MAV_CMD_NAV_LAND, 0, 0, home_lat, home_lon, 0))
     return items
 
 

@@ -20,3 +20,30 @@ class TriggerWatcher:
     def reset(self):
         """Arm the watcher again, e.g. after landing for the next mission."""
         self.triggered = False
+
+
+class PatrolTimer:
+    """Ends the patrol after a fixed time over the protected area.
+
+    The thesis drone patrols until its mission time is up and the Pi then
+    sends RTL. The time comes from the battery: ~10 min of flight on the
+    6200 mAh pack, minus the flight out, the return and a reserve.
+    """
+
+    def __init__(self, duration_s):
+        self.duration_s = duration_s
+        self.started_at = None
+
+    def start(self, now):
+        self.started_at = now
+
+    def stop(self):
+        self.started_at = None
+
+    @property
+    def running(self):
+        return self.started_at is not None
+
+    def expired(self, now):
+        """True once duration_s has passed since start(); False if not running."""
+        return self.running and now - self.started_at >= self.duration_s

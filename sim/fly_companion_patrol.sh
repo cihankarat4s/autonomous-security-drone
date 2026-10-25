@@ -2,21 +2,26 @@
 # End-to-end run, unattended (inside WSL): Gazebo -> SITL -> companion app on
 # its default config -> patrol mission -> shut everything down. The companion
 # logs every processed frame and saves every detection frame under logs/<name>.
+# The drone patrols the area until the companion's patrol time is up (config
+# mission.patrol_time_s, or the third argument in seconds) and it sends RTL.
 #
-#   bash sim/fly_companion_patrol.sh <name> [flat|urban]
-#   bash sim/fly_companion_patrol.sh urban_26n urban
+#   bash sim/fly_companion_patrol.sh <name> [flat|urban] [patrol seconds]
+#   bash sim/fly_companion_patrol.sh patrol_test urban 120
 #
 # Afterwards: python sim/summarize_flight_logs.py logs/<name>.csv
 set -euo pipefail
 
 NAME="$1"
 WORLD="${2:-urban}"
+PATROL_S="${3:-}"
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 source sim/lib.sh
 PY="$HOME/venvs/security-drone/bin/python"
 mkdir -p logs
 rm -rf "logs/$NAME" "logs/$NAME.csv"
 
+COMPANION_ARGS=()
+[[ -n "$PATROL_S" ]] && COMPANION_ARGS+=(--patrol-time "$PATROL_S")
 GZ_ARGS=(--headless)
 [[ "$WORLD" == urban ]] && GZ_ARGS+=(--world urban)
 
@@ -45,12 +50,12 @@ sleep 3
 
 echo "Starting companion"
 "$PY" -m security_drone.main --snapshot-dir "logs/$NAME" --frame-log "logs/$NAME.csv" \
-    --save-all-detections > "logs/${NAME}_companion.log" 2>&1 &
+    --save-all-detections "${COMPANION_ARGS[@]}" > "logs/${NAME}_companion.log" 2>&1 &
 wait_for "companion start" 120 $! grep -q "GLOBAL_POSITION_INT stream requested" "logs/${NAME}_companion.log"
 grep -E "Loaded|Heartbeat" "logs/${NAME}_companion.log"
 
 echo "Flying the patrol mission"
-timeout 900 "$PY" sim/fly_patrol_mission.py
+timeout 1200 "$PY" sim/fly_patrol_mission.py
 sleep 3
-echo "== companion alarms"
-grep -E "Trigger|Sent STATUSTEXT" "logs/${NAME}_companion.log" || true
+echo "== companion"
+grep -E "Trigger|Patrol|patrol|RTL|Sent STATUSTEXT|Detection stopped" "logs/${NAME}_companion.log" || true

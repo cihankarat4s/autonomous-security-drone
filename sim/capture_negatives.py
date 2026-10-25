@@ -32,6 +32,8 @@ def main():
     parser.add_argument("--period", type=float, default=0.5, help="seconds between saved frames")
     parser.add_argument("--min-alt", type=float, default=0.5, help="skip frames on the ground")
     parser.add_argument("--connection", default="tcp:127.0.0.1:5762")
+    parser.add_argument("--timeout", type=float, default=1500,
+                        help="give up after this many seconds (a stuck sim must not hang a run)")
     args = parser.parse_args()
 
     config = load_config(DEFAULT_CONFIG_PATH)
@@ -50,7 +52,10 @@ def main():
     seq = 0
     last_save = 0.0
     saved = 0
+    deadline = time.monotonic() + args.timeout
     while not (was_armed and not armed):
+        if time.monotonic() > deadline:
+            raise SystemExit(f"Timed out after {args.timeout:.0f} s ({saved} frames saved)")
         msg = master.recv_match(type=["HEARTBEAT", "GLOBAL_POSITION_INT", "MISSION_CURRENT"],
                                 blocking=True, timeout=0.1)
         if msg is not None and msg.get_srcSystem() == master.target_system \

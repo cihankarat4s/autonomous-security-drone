@@ -132,9 +132,15 @@ def main():
     wait_until_disarmed(master)
 
 
-def wait_until_disarmed(master):
-    """Print mission progress until the vehicle disarms after landing."""
+def wait_until_disarmed(master, timeout_s=900):
+    """Print mission progress until the vehicle disarms after landing.
+
+    Gives up after timeout_s, so a stuck simulation does not hang a run.
+    """
+    deadline = time.monotonic() + timeout_s
     while True:
+        if time.monotonic() > deadline:
+            raise RuntimeError(f"Vehicle still armed after {timeout_s} s")
         msg = master.recv_match(type=["MISSION_ITEM_REACHED", "HEARTBEAT", "STATUSTEXT"],
                                 blocking=True, timeout=5)
         if msg is None or msg.get_srcSystem() != master.target_system:

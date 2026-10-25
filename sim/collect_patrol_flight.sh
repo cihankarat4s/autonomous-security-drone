@@ -12,6 +12,7 @@ set -euo pipefail
 NAME="$1"
 SUN="${2:-}"
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
+source sim/lib.sh
 PY="$HOME/venvs/security-drone/bin/python"
 mkdir -p logs
 
@@ -29,17 +30,17 @@ trap cleanup EXIT
 
 echo "Starting Gazebo (${GZ_ARGS[*]})"
 bash sim/run_gazebo.sh "${GZ_ARGS[@]}" > "logs/collect_${NAME}_gazebo.log" 2>&1 &
-until gz topic -l 2>/dev/null | grep -q "^/gimbal/cmd_pitch$"; do sleep 2; done
+wait_for "Gazebo start" 180 $! gimbal_topic_up
 sleep 5   # let the gimbal command go out and the models load
 
 echo "Starting SITL"
 # No terminal here: MAVProxy needs --daemon, or it exits at once.
 bash sim/run_sitl.sh --mavproxy-args="--daemon" < /dev/null > "logs/collect_${NAME}_sitl.log" 2>&1 &
-until (echo > /dev/tcp/127.0.0.1/5762) 2>/dev/null; do sleep 2; done
+wait_for "SITL start" 240 $! port_open 5762
 sleep 3
 
 "$PY" sim/capture_negatives.py --name "$NAME" --root "$HOME/datasets/gazebo_urban" --period 0.25 &
 CAPTURE=$!
 sleep 8
-"$PY" sim/fly_patrol_mission.py
-wait "$CAPTURE"
+timeout 900 "$PY" sim/fly_patrol_mission.py
+wait_pid "frame capture" 60 "$CAPTURE"

@@ -23,6 +23,8 @@ GZ_ARGS=(--headless)
 cleanup() {
     pkill -INT -f "[s]ecurity_drone.main" || true
     sleep 2
+    # pymavlink may be stuck reconnecting and ignore Ctrl-C.
+    pkill -9 -f "[s]ecurity_drone.main" || true
     pkill -f "[s]im_vehicle.py" || true
     pkill -f "[b]in/arducopter" || true
     pkill -f "[m]avproxy" || true

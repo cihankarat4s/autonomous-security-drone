@@ -1,11 +1,12 @@
 """Save a Gazebo camera frame, by default when the trigger waypoint is reached.
 
 Run it before starting the mission (SITL and Gazebo running):
-    python sim/capture_frame.py --out media/images/sim_camera_wp2.png
+    python sim/capture_frame.py --out logs/camera_wp2.png
     python sim/capture_frame.py --now --out /tmp/test.png   # grab a frame right away
 """
 import argparse
 import time
+from pathlib import Path
 
 import cv2
 from pymavlink import mavutil
@@ -38,7 +39,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--config", default=DEFAULT_CONFIG_PATH)
     parser.add_argument("--connection", help="override mavlink.connection")
-    parser.add_argument("--out", default="media/images/sim_camera_wp2.png")
+    parser.add_argument("--out", default="logs/camera_wp2.png")
     parser.add_argument("--now", action="store_true", help="do not wait for the trigger")
     args = parser.parse_args()
 
@@ -53,6 +54,7 @@ def main():
         print("Waiting for the trigger waypoint")
         wait_for_trigger(master, config["mission"]["trigger_seq"])
 
+    Path(args.out).parent.mkdir(parents=True, exist_ok=True)
     cv2.imwrite(args.out, camera.read())
     print(f"Saved {args.out}")
 

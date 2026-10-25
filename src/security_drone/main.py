@@ -192,7 +192,7 @@ class Companion:
             # Time since detection start and mission leg, matching the frame log.
             name = f"det_{now - self.detection_started:06.2f}s_seq{self.last_reached_seq}.png"
         else:
-            name = "sim_detection_wp2.png"
+            name = "first_detection.png"
         path = out_dir / name
         cv2.imwrite(str(path), draw_detections(result.frame, result.detections))
         if not self.snapshot_saved:

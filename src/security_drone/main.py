@@ -170,6 +170,9 @@ class Companion:
         self.worker.stop()
         self.worker.join(timeout=2)
         self.worker = None
+        # Drop results still queued, or a frame from the patrol raises an
+        # alert after RTL. A late put from the old worker lands in the old queue.
+        self.results = queue.Queue()
         if self.threat_alarm.active:
             self.threat_alarm.active = False
             self.buzzer.off()

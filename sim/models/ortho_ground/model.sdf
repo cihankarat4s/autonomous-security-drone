@@ -1,0 +1,44 @@
+<?xml version="1.0" ?>
+<!-- 200 x 200 m orthophoto ground (x -100..100, y -70..130) on a larger plain
+     plane. Matches the area in sim/make_ortho_ground.py. -->
+<sdf version="1.9">
+  <model name="ortho_ground">
+    <static>true</static>
+    <link name="link">
+      <collision name="collision">
+        <geometry>
+          <plane><normal>0 0 1</normal><size>400 400</size></plane>
+        </geometry>
+      </collision>
+      <visual name="surround">
+        <cast_shadows>false</cast_shadows>
+        <geometry>
+          <plane><normal>0 0 1</normal><size>400 400</size></plane>
+        </geometry>
+        <material>
+          <ambient>0.42 0.42 0.38 1</ambient>
+          <diffuse>0.42 0.42 0.38 1</diffuse>
+          <specular>0 0 0 1</specular>
+        </material>
+      </visual>
+      <visual name="textured">
+        <pose>0 30 0.01 0 0 0</pose>
+        <cast_shadows>false</cast_shadows>
+        <geometry>
+          <plane><normal>0 0 1</normal><size>200 200</size></plane>
+        </geometry>
+        <material>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0 0 0 1</specular>
+          <pbr>
+            <metal>
+              <albedo_map>model://ortho_ground/materials/textures/ground.jpg</albedo_map>
+              <roughness>1.0</roughness>
+              <metalness>0.0</metalness>
+            </metal>
+          </pbr>
+        </material>
+      </visual>
+    </link>
+  </model>
+</sdf>

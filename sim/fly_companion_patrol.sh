@@ -5,7 +5,7 @@
 # The drone patrols the area until the companion's patrol time is up (config
 # mission.patrol_time_s, or the third argument in seconds) and it sends RTL.
 #
-#   bash sim/fly_companion_patrol.sh <name> [flat|urban] [patrol seconds]
+#   bash sim/fly_companion_patrol.sh <name> [flat|urban|ortho] [patrol seconds]
 #   bash sim/fly_companion_patrol.sh patrol_test urban 120
 #
 # Afterwards: python sim/summarize_flight_logs.py logs/<name>.csv
@@ -23,7 +23,7 @@ rm -rf "logs/$NAME" "logs/$NAME.csv"
 COMPANION_ARGS=()
 [[ -n "$PATROL_S" ]] && COMPANION_ARGS+=(--patrol-time "$PATROL_S")
 GZ_ARGS=(--headless)
-[[ "$WORLD" == urban ]] && GZ_ARGS+=(--world urban)
+[[ "$WORLD" != flat ]] && GZ_ARGS+=(--world "$WORLD")
 
 cleanup() {
     pkill -INT -f "[s]ecurity_drone.main" || true

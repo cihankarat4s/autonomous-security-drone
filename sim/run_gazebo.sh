@@ -5,9 +5,12 @@
 #   sim/run_gazebo.sh --headless              server only, the camera still renders
 #   sim/run_gazebo.sh --headless --no-intruder --sun 0.4,-0.6,-0.7
 #   sim/run_gazebo.sh --headless --world urban
+#   sim/run_gazebo.sh --world ortho
 #
 # --world urban loads security_patrol_urban.sdf (textured ground, trees,
 # buildings, vehicles, several people) instead of the flat default world.
+# --world ortho loads security_patrol_ortho.sdf: a real drone orthophoto as
+# the ground (sim/make_ortho_ground.py) with people in the protected area.
 #
 # --no-intruder removes the walking person, so every camera frame is a
 # guaranteed negative (used to collect hard negatives such as the drone's own
@@ -34,6 +37,11 @@ while [[ $# -gt 0 ]]; do
     esac
     shift
 done
+
+# The orthophoto ground is downloaded and rotated once, not stored in git.
+if [[ "$WORLD" == *ortho* && ! -f "$SIM_DIR/models/ortho_ground/materials/textures/ground.jpg" ]]; then
+    "$HOME/venvs/security-drone/bin/python" "$SIM_DIR/make_ortho_ground.py"
+fi
 
 # Variants are written next to the original so model:// lookups stay the same.
 if [[ $NO_INTRUDER == 1 || -n "$SUN" ]]; then

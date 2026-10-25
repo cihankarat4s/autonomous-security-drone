@@ -1,43 +1,163 @@
 ﻿# Autonomous Security Drone
 
-A low-cost autonomous drone that flies a pre-planned mission over a protected area, detects intruders with an onboard object detector and raises an alarm.
+An autonomous drone that flies a pre-planned patrol mission, starts looking for people when it reaches the protected area, and sends a threat alert with position and time to the ground station.
 
-This started as my undergraduate graduation project (TÜBİTAK 2209-A supported) and is now being **rebuilt in simulation** (ArduPilot SITL + Gazebo), because the original hardware is no longer available.
+The flight controller runs ArduPilot; a companion computer listens to it over MAVLink, runs a YOLO person detector on the downward camera and raises a non-blocking alarm.
 
-> **Status:** Work in progress. The simulation environment is set up; the companion application is being rewritten from scratch.
+![YOLO26n detecting two people from 15 m over the protected area](media/images/urban_detection_yolo26n.png)
 
-## Original system (hardware, tested during the project)
+*Gazebo, 15 m altitude, fine-tuned YOLO26n. Both people are found; the drone's own shadow (left) is not.*
 
-1. A mission planned in Mission Planner is flown autonomously by a Pixhawk running ArduPilot.
-2. A Raspberry Pi 5 companion computer listens to the flight controller over MAVLink and starts detection when the drone reaches the surveillance waypoint (`MISSION_ITEM_REACHED`).
-3. Frames from a Camera Module 3 NoIR are enhanced (histogram equalization, sharpening) and passed to a YOLOv8n detector looking for people.
-4. On a detection, a buzzer is triggered and a `STATUSTEXT` alert is sent to the ground station.
-5. The drone returns home with RTL when the mission ends.
+> **Background.** This was my TÜBİTAK 2209-A supported undergraduate graduation project. The hardware tests were done in 2025 with a Pixhawk and a Raspberry Pi 5. The drone, the original companion script and the original trained model are no longer available, so in 2026 I rebuilt the system in simulation (ArduPilot SITL + Gazebo Harmonic) and retrained the detector. Everything below the "Original hardware" section was built and measured in simulation.
+
+## How it works
+
+```mermaid
+flowchart LR
+    M[Patrol mission<br/>Mission Planner or<br/>sim/fly_patrol_mission.py] -- MAVLink --> AP[ArduPilot<br/>SITL ArduCopter]
+    AP <-- JSON --> GZ[Gazebo Harmonic<br/>drone + gimbal camera]
+    GZ -- camera frames<br/>gz-transport --> C
+    AP -- HEARTBEAT, GLOBAL_POSITION_INT,<br/>MISSION_ITEM_REACHED --> C
+    subgraph C[Companion app - src/security_drone]
+        T[Trigger at waypoint 2] --> D[Detection thread<br/>YOLO26n, conf 0.25]
+        D --> A[Threat alarm<br/>state machine]
+    end
+    A -- STATUSTEXT --> AP --> G[Ground station]
+```
+
+1. The mission is: take off to 15 m, fly to the protected area 60 m north (waypoint 2), hover 10 s, fly on, return home.
+2. When ArduPilot reports `MISSION_ITEM_REACHED` for the trigger waypoint, the companion starts a detection thread on the camera feed.
+3. Detections go through a queue to the main thread, which owns the MAVLink link. The alarm turns on at the first person, repeats every 10 s while people are seen, and clears 3 s after the last one.
+4. Each alert is a `STATUSTEXT` from the companion's own component id, e.g. `Threat: 2 person at -35.36272,149.16524 04:08:36Z`, which the autopilot forwards to the ground station.
+5. Detection stops when the vehicle disarms after landing, ready for the next flight.
+
+## Results
+
+### Person detector
+
+The original COCO `yolov8n.pt` is trained mostly on ground-level photos and barely finds people seen from above. I fine-tuned on [VisDrone2019-DET](https://github.com/VisDrone/VisDrone-Dataset) (drone images; `pedestrian` + `people` merged into one `person` class), then added Gazebo "hard negatives" (below). All models: 50 epochs, 1280 px, Colab L4. Scored on VisDrone **test-dev** (1,610 real drone images, never used in training), person class only:
+
+| Model | mAP50 @640 | mAP50 @1280 | Recall @1280 | Params |
+|---|---|---|---|---|
+| YOLOv8n, COCO weights | 0.075 | 0.176 | 0.183 | 3.2 M |
+| YOLOv8n + VisDrone | 0.240 | 0.438 | 0.405 | 3.0 M |
+| YOLOv8n + VisDrone + negatives | 0.237 | 0.437 | 0.406 | 3.0 M |
+| YOLO11n + VisDrone + negatives | 0.246 | 0.440 | 0.407 | 2.6 M |
+| **YOLO26n + VisDrone + negatives** (used) | **0.266** | **0.455** | **0.420** | 2.5 M |
+
+Fine-tuning more than doubles mAP; the fine-tuned model at 640 px beats the COCO model at 1280 px with a quarter of the computation. Full tables: [`docs/results/`](docs/results).
+
+### The drone mistook its own shadow for a person
+
+![VisDrone model boxing the drone's X-shaped shadow (left) as a person](media/images/shadow_false_positive.png)
+
+The first VisDrone model raised alarms over empty ground: it boxed the drone's own X-shaped shadow (left) as a person, during the hover, on turns and on landing. VisDrone has no images of a drone's shadow, so the model had never learned that it is not a person. A real drone casts one too.
+
+Fix: fly Gazebo missions in a world with nobody in it (several sun angles, 6-25 m, a textured urban world with vehicles, trees and street furniture) and add the frames as empty-label training images. [`training/select_negatives.py`](training/select_negatives.py) kept every frame either model boxed something in plus every 4th other frame: 506 images, ~18% backgrounds overall.
+
+| Frames with a false positive, held-out sun angle (220 frames) | |
+|---|---|
+| YOLOv8n COCO | 4.5% |
+| YOLOv8n + VisDrone | 15.5% |
+| any model + VisDrone + negatives | **0%** |
+
+Test-dev mAP stayed the same. The cost showed up in a held-out Gazebo flight: the YOLOv8n negatives model found the *second* of two people in fewer frames, especially people with long shadows. YOLO11n and YOLO26n trained the same way kept more of them, which together with test-dev and equal speed is why YOLO26n is the default ([threshold sweep](docs/results/threshold_sweep.csv)).
+
+### End-to-end flight (urban world, YOLO26n)
+
+[`sim/fly_companion_patrol.sh`](sim/fly_companion_patrol.sh) runs Gazebo, SITL, the companion and the mission unattended:
+
+- first alert 0.4 s after reaching the trigger waypoint;
+- a person found in 99 of 99 hover frames, mean confidence 0.77, never more than 0.5 s without a detection;
+- no detections on the return leg or landing (vehicles, fire hydrant, lamp posts, own shadow);
+- ~60 ms per frame at 1280 px on a GTX 1650 Ti.
+
+### CPU speed (a stand-in for the Raspberry Pi)
+
+The Pi is not available, so latency was measured on a laptop CPU (Intel i5-10300H) pinned to 4 cores like a Pi 5, preprocessing + inference + postprocessing per frame ([`training/benchmark_cpu.py`](training/benchmark_cpu.py)):
+
+| YOLO26n | 640 px | 960 px | 1280 px |
+|---|---|---|---|
+| PyTorch | 108 ms | 155 ms | 213 ms |
+| NCNN | 71 ms | 164 ms | 317 ms |
+
+YOLOv8n, YOLO11n and YOLO26n were within ~7% of each other at every size, despite 8.2 / 6.5 / 5.9 GFLOPs. These are relative numbers: a Pi 5 is several times slower, and NCNN is tuned for ARM, so the Pi has to be measured on the Pi. On the Pi the detector would run at 640 px, where the fine-tuned model still beats COCO at 1280.
+
+## Engineering notes
+
+Things that went wrong or were not what I expected, and what I changed:
+
+- **Trigger on takeoff.** The thesis started detection at `seq == 1`, which in a mission that begins with TAKEOFF is the takeoff itself. The trigger waypoint is now configurable (`trigger_seq: 2`).
+- **Commands that silently fail.** After the default 10 s disarm delay, TAKEOFF returned `MAV_RESULT_FAILED`. Every command now checks `COMMAND_ACK.result` instead of assuming success.
+- **Talking to the wrong component.** pymavlink left `target_component` at 0, and the autopilot forwards the ground station's heartbeats between links, so the companion could lock onto the ground station instead of the autopilot. `connect()` now waits for the autopilot's own heartbeat and sets the target component.
+- **A hold time delays the waypoint event.** With a hold time on the waypoint itself, `MISSION_ITEM_REACHED` only arrives when the hold ends. The hover is a separate `LOITER_TIME` item.
+- **The alarm froze the loop.** The thesis alarm used `sleep()` in the main loop. It is now a non-blocking state machine that also clears itself.
+- **Small targets need a large input.** A person is ~45 px tall from 15 m; COCO YOLOv8n found nothing at 640 px and found it at 1280 px.
+- **A dataset bug that looked like training.** A symlinked image folder made Ultralytics read the original 10-class labels, mark almost every image "corrupt" and train on nothing, without an error. Images are now hard-linked.
+- **Several boxes on one person.** YOLO26n is NMS-free and sometimes puts nested boxes on one person (body, body + shadow), so "1 person" was reported as up to 5. Their IoU is low, so plain NMS would not merge them; [`merge_overlapping()`](src/security_drone/detection/detector.py) drops a box that covers most of a more confident one.
+- **I corrected one of my own claims.** A first threshold sweep suggested the negatives model beat the old one on every axis at conf 0.25; it was counting those nested boxes as extra people. After deduplicating and checking on a held-out flight, the claim did not hold, and the table above says what did.
+
+## Running it
+
+Tested on Windows 11 + WSL2 Ubuntu 22.04 with an NVIDIA GPU. Needs [ArduPilot SITL](https://ardupilot.org/dev/docs/building-setup-linux.html) in `~/ardupilot`, [Gazebo Harmonic](https://gazebosim.org/docs/harmonic/install_ubuntu) and the [`ardupilot_gazebo`](https://github.com/ArduPilot/ardupilot_gazebo) plugin built in `~/ardupilot_gazebo`.
+
+```bash
+python3 -m venv --system-site-packages ~/venvs/security-drone   # system packages for the gz bindings
+~/venvs/security-drone/bin/pip install -r requirements.txt
+~/venvs/security-drone/bin/pip install -e .
+~/venvs/security-drone/bin/python -m pytest -q
+```
+
+The trained weights are not in git. Download `yolo26n_visdrone_person_neg.pt` from the [Releases](https://github.com/cihankarat4s/autonomous-security-drone/releases) page into the repository root, or train it with [`training/colab_train.ipynb`](training/colab_train.ipynb). To use the COCO weights instead, set `detection.model: yolov8n.pt` and `detection.confidence: 0.4` in [`config/default.yaml`](config/default.yaml).
+
+One command, unattended (`urban` or `flat` world):
+
+```bash
+bash sim/fly_companion_patrol.sh demo urban
+```
+
+Or step by step, one terminal each, in this order:
+
+```bash
+bash sim/run_gazebo.sh --world urban      # drop --world for the flat world; add --headless for no GUI
+bash sim/run_sitl.sh                      # SITL + MAVProxy
+~/venvs/security-drone/bin/python -m security_drone.main   # companion, TCP 5762
+~/venvs/security-drone/bin/python sim/fly_patrol_mission.py  # uploads and flies the mission, TCP 5763
+```
+
+Mission Planner on Windows can listen on UDP 14550 to watch the flight and the threat messages.
+
+## Repository structure
+
+```
+src/security_drone/   companion app: MAVLink link, trigger, camera, detector, alarm
+config/default.yaml   connection, trigger waypoint, model, threshold, alarm timing
+sim/                  Gazebo worlds, launch scripts, missions, data collection
+training/             VisDrone preparation, Colab training, evaluation, benchmarks
+tests/                unit tests (no GPU or simulator needed)
+docs/results/         all measured results as CSV
+media/images/         figures used in this README
+```
+
+## Limitations
+
+- Everything after 2025 was tested in simulation only. The Gazebo people and shadows are rendered, not real, and the hard negatives are synthetic.
+- No measurement on a Raspberry Pi; the CPU numbers are from a laptop.
+- I have no aerial footage of my own, so the only real-image test is VisDrone test-dev.
+
+## Original hardware (2025)
+
+1. A mission planned in Mission Planner was flown by a Pixhawk running ArduPilot.
+2. A Raspberry Pi 5 on TELEM2 listened over MAVLink and started detection at the surveillance waypoint.
+3. Frames from a Camera Module 3 NoIR were enhanced (histogram equalisation, sharpening) and passed to YOLOv8n.
+4. On a detection, a buzzer sounded and a `STATUSTEXT` was sent to the ground station; the drone returned with RTL.
 
 ![Hardware wiring diagram](media/images/hardware_wiring_diagram.png)
 
 **Hardware:** Pixhawk, Raspberry Pi 5 (8 GB), Camera Module 3 NoIR, 3DR 433 MHz telemetry, 3S 6200 mAh Li-Po, MINI560 step-down regulator, buzzer, FlySky FS-i6X.
 
-The original companion script and the custom-trained detection model were not preserved. Earlier 2024 prototypes (DroneKit flight helpers, OpenCV STOP-sign and face tracking) are available in the initial commit `dbd549e`.
-
-## Rebuild in simulation
-
-```
-ArduPilot SITL (ArduCopter) <-- MAVLink --> companion app (Python, pymavlink)
-        ^                                      - mission trigger (MISSION_ITEM_REACHED)
-        | ardupilot_gazebo (JSON)              - camera -> YOLOv8n person detection
-Gazebo Harmonic: drone + gimbal camera         - non-blocking alarm + STATUSTEXT
-Mission Planner (Windows) <-- UDP 14550
-```
-
-Environment: Windows 11 + WSL2 (Ubuntu 22.04), ArduPilot SITL, Gazebo Harmonic with `ardupilot_gazebo`, NVIDIA GTX 1650 Ti.
-
-The original custom model was not preserved. The rebuilt version uses YOLO26n fine-tuned on VisDrone persons plus Gazebo hard negatives (`training/`), loaded from `yolo26n_visdrone_person_neg.pt` in the repository root. The weights are not in git: train them with `training/colab_train.ipynb`, or run with the COCO weights instead (`--model yolov8n.pt`, set `detection.confidence` to 0.4 in `config/default.yaml`).
-
-## Repository structure
-
-- `media/images/` – wiring diagram and test footage frame
+Earlier 2024 prototypes (DroneKit flight helpers, OpenCV STOP-sign and face tracking) are in the initial commit `dbd549e`.
 
 ## Safety
 
-Flight code in this repository is experimental. Validate everything in SITL before considering real hardware.
+The flight code is experimental and has only been run in SITL. Validate everything in simulation before any real hardware.

@@ -25,11 +25,12 @@ flowchart LR
     A -- STATUSTEXT --> AP --> G[Ground station]
 ```
 
-1. The mission is: take off to 15 m, fly to the protected area 60 m north (waypoint 2), hover 10 s, fly on, return home.
-2. When ArduPilot reports `MISSION_ITEM_REACHED` for the trigger waypoint, the companion starts a detection thread on the camera feed.
+1. The mission follows the thesis: take off to 15 m, fly to the protected area 60 m north (waypoint 2), then fly square laps over it. The camera sees ~26 x 19.5 m from 15 m; laps 5 m off the centre keep the centre in view on every leg and each edge of the 20 x 20 m area on at least one.
+2. When ArduPilot reports `MISSION_ITEM_REACHED` for the trigger waypoint, the companion starts a detection thread on the camera feed and a patrol timer.
 3. Detections go through a queue to the main thread, which owns the MAVLink link. The alarm turns on at the first person, repeats every 10 s while people are seen, and clears 3 s after the last one.
 4. Each alert is a `STATUSTEXT` from the companion's own component id, e.g. `Threat: 2 person at -35.36272,149.16524 04:08:36Z`, which the autopilot forwards to the ground station.
-5. Detection stops when the vehicle disarms after landing, ready for the next flight.
+5. When the patrol time is up, the companion sends RTL and checks that the autopilot accepted it (thesis: the Raspberry Pi sends RTL when the mission time ends). The 6 min come from the battery: the thesis estimates ~10 min of flight on the 6200 mAh pack, and the flight out, the return and landing take ~1.5 min. A ground station can end the patrol earlier by switching to RTL or LAND. The Pixhawk's own battery failsafe and a final RTL after a fixed number of laps are the backups.
+6. Detection stops when the patrol ends, ready for the next flight after landing.
 
 ## Results
 
@@ -65,12 +66,14 @@ Test-dev mAP stayed the same. The cost showed up in a held-out Gazebo flight: th
 
 ### End-to-end flight (urban world, YOLO26n)
 
-[`sim/fly_companion_patrol.sh`](sim/fly_companion_patrol.sh) runs Gazebo, SITL, the companion and the mission unattended:
+[`sim/fly_companion_patrol.sh`](sim/fly_companion_patrol.sh) runs Gazebo, SITL, the companion and the mission unattended. Patrol flight, with the patrol time shortened to 2 min for the test:
 
-- first alert 0.4 s after reaching the trigger waypoint;
-- a person found in 99 of 99 hover frames, mean confidence 0.77, never more than 0.5 s without a detection;
-- no detections on the return leg or landing (vehicles, fire hydrant, lamp posts, own shadow);
-- ~60 ms per frame at 1280 px on a GTX 1650 Ti.
+- first alert 0.6 s after reaching the trigger waypoint;
+- 597 frames over five laps; a person in 58% of them (the camera moves, so people leave the frame), never more than 6 s without a detection, mean confidence 0.63;
+- after 120 s the companion sent RTL, the autopilot accepted it, and the drone flew home, landed and disarmed;
+- ~63 ms per frame at 1280 px on a GTX 1650 Ti.
+
+An earlier hover test over the same spot (`fly_patrol_mission.py --hover 10`) found a person in 99 of 99 frames (mean confidence 0.77) and nothing on the return leg or landing (vehicles, fire hydrant, lamp posts, own shadow).
 
 ### CPU speed (a stand-in for the Raspberry Pi)
 
@@ -91,6 +94,7 @@ Things that went wrong or were not what I expected, and what I changed:
 - **Commands that silently fail.** After the default 10 s disarm delay, TAKEOFF returned `MAV_RESULT_FAILED`. Every command now checks `COMMAND_ACK.result` instead of assuming success.
 - **Talking to the wrong component.** pymavlink left `target_component` at 0, and the autopilot forwards the ground station's heartbeats between links, so the companion could lock onto the ground station instead of the autopilot. `connect()` now waits for the autopilot's own heartbeat and sets the target component.
 - **A hold time delays the waypoint event.** With a hold time on the waypoint itself, `MISSION_ITEM_REACHED` only arrives when the hold ends. The hover is a separate `LOITER_TIME` item.
+- **A command item shifted the waypoint event.** With a `DO_CHANGE_SPEED` right after the trigger waypoint, ArduPilot reported the waypoint's `MISSION_ITEM_REACHED` with the next seq (its own `STATUSTEXT` still said "Reached command #2"), so detection never started and the drone patrolled blind. The trigger waypoint is now followed by a navigation item, and a test checks it.
 - **The alarm froze the loop.** The thesis alarm used `sleep()` in the main loop. It is now a non-blocking state machine that also clears itself.
 - **Small targets need a large input.** A person is ~45 px tall from 15 m; COCO YOLOv8n found nothing at 640 px and found it at 1280 px.
 - **A dataset bug that looked like training.** A symlinked image folder made Ultralytics read the original 10-class labels, mark almost every image "corrupt" and train on nothing, without an error. Images are now hard-linked.
@@ -110,10 +114,10 @@ python3 -m venv --system-site-packages ~/venvs/security-drone   # system package
 
 The trained weights are not in git. Download `yolo26n_visdrone_person_neg.pt` from the [Releases](https://github.com/cihankarat4s/autonomous-security-drone/releases) page into the repository root, or train it with [`training/colab_train.ipynb`](training/colab_train.ipynb). To use the COCO weights instead, set `detection.model: yolov8n.pt` and `detection.confidence: 0.4` in [`config/default.yaml`](config/default.yaml).
 
-One command, unattended (`urban` or `flat` world):
+One command, unattended (`urban` or `flat` world, optional patrol time in seconds):
 
 ```bash
-bash sim/fly_companion_patrol.sh demo urban
+bash sim/fly_companion_patrol.sh demo urban 120
 ```
 
 Or step by step, one terminal each, in this order:
@@ -122,7 +126,7 @@ Or step by step, one terminal each, in this order:
 bash sim/run_gazebo.sh --world urban      # drop --world for the flat world; add --headless for no GUI
 bash sim/run_sitl.sh                      # SITL + MAVProxy
 ~/venvs/security-drone/bin/python -m security_drone.main   # companion, TCP 5762
-~/venvs/security-drone/bin/python sim/fly_patrol_mission.py  # uploads and flies the mission, TCP 5763
+~/venvs/security-drone/bin/python sim/fly_patrol_mission.py  # uploads and flies the patrol, TCP 5763
 ```
 
 Mission Planner on Windows can listen on UDP 14550 to watch the flight and the threat messages.

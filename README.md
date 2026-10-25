@@ -154,7 +154,9 @@ media/images/         figures used in this README
 
 ![Hardware wiring diagram](media/images/hardware_wiring_diagram.png)
 
-**Hardware:** Pixhawk, Raspberry Pi 5 (8 GB), Camera Module 3 NoIR, 3DR 433 MHz telemetry, 3S 6200 mAh Li-Po, MINI560 step-down regulator, buzzer, FlySky FS-i6X.
+*The diagram does not show the buzzer or the MINI560 step-down regulator that powered the Raspberry Pi; both were on the drone.*
+
+**Hardware:** Pixhawk, Raspberry Pi 5 (8 GB), Camera Module 3 NoIR, GPS, 3DR 433 MHz telemetry, FlySky FS-i6X with receiver, 3S 6200 mAh Li-Po, MINI560 step-down regulator, buzzer.
 
 Earlier 2024 prototypes (DroneKit flight helpers, OpenCV STOP-sign and face tracking) are in the initial commit `dbd549e`.
 

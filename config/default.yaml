@@ -13,13 +13,16 @@ camera:
   gazebo_topic: /world/security_patrol/model/iris_with_gimbal/model/gimbal/link/pitch_link/sensor/camera/image
 
 detection:
-  # YOLOv8n fine-tuned on VisDrone persons + Gazebo hard negatives
+  # YOLO26n fine-tuned on VisDrone persons + Gazebo hard negatives
   # (training/colab_train.ipynb). Not in git; see the README to get it.
+  # Chosen over YOLOv8n/YOLO11n trained the same way: best VisDrone test-dev
+  # mAP50 at every input size, same CPU latency (docs/results/).
   # yolov8n.pt (COCO, downloaded on first use) also works, with confidence 0.4.
-  model: yolov8n_visdrone_person_neg.pt
+  model: yolo26n_visdrone_person_neg.pt
   # 0.25, not the thesis 0.4: this model has 0 false-positive frames down to
-  # 0.2, and at 0.4 it finds the second of two people in only ~1 in 4 hover
-  # frames (0.25: ~2 in 5). See docs/results/threshold_sweep.csv.
+  # 0.2; on the held-out hover it finds a person in every frame at 0.25 (98%
+  # from 0.3) and the second of two people in ~1 in 2 frames (0.4: ~2 in 5).
+  # See docs/results/threshold_sweep.csv.
   confidence: 0.25
   classes: [0]               # "person" in both models
   # Measured on the WP2 Gazebo frame (person ~45 px, seen from above):

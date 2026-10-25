@@ -32,7 +32,7 @@ Mission Planner (Windows) <-- UDP 14550
 
 Environment: Windows 11 + WSL2 (Ubuntu 22.04), ArduPilot SITL, Gazebo Harmonic with `ardupilot_gazebo`, NVIDIA GTX 1650 Ti.
 
-The original custom model was not preserved. The rebuilt version uses YOLOv8n fine-tuned on VisDrone persons plus Gazebo hard negatives (`training/`), loaded from `yolov8n_visdrone_person_neg.pt` in the repository root. The weights are not in git: train them with `training/colab_train.ipynb`, or run with the COCO weights instead (`--model yolov8n.pt`, set `detection.confidence` to 0.4 in `config/default.yaml`).
+The original custom model was not preserved. The rebuilt version uses YOLO26n fine-tuned on VisDrone persons plus Gazebo hard negatives (`training/`), loaded from `yolo26n_visdrone_person_neg.pt` in the repository root. The weights are not in git: train them with `training/colab_train.ipynb`, or run with the COCO weights instead (`--model yolov8n.pt`, set `detection.confidence` to 0.4 in `config/default.yaml`).
 
 ## Repository structure
 

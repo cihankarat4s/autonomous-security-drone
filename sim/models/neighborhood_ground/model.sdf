@@ -1,0 +1,44 @@
+<?xml version="1.0" ?>
+<!-- 200 x 225 m textured ground (x -100..100, y -30..195) on a larger plain
+     grass plane. Matches the area in sim/make_neighborhood.py. -->
+<sdf version="1.9">
+  <model name="neighborhood_ground">
+    <static>true</static>
+    <link name="link">
+      <collision name="collision">
+        <geometry>
+          <plane><normal>0 0 1</normal><size>500 500</size></plane>
+        </geometry>
+      </collision>
+      <visual name="surround">
+        <cast_shadows>false</cast_shadows>
+        <geometry>
+          <plane><normal>0 0 1</normal><size>500 500</size></plane>
+        </geometry>
+        <material>
+          <ambient>0.33 0.45 0.24 1</ambient>
+          <diffuse>0.33 0.45 0.24 1</diffuse>
+          <specular>0 0 0 1</specular>
+        </material>
+      </visual>
+      <visual name="textured">
+        <pose>0 82.5 0.01 0 0 0</pose>
+        <cast_shadows>false</cast_shadows>
+        <geometry>
+          <plane><normal>0 0 1</normal><size>200 225</size></plane>
+        </geometry>
+        <material>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0 0 0 1</specular>
+          <pbr>
+            <metal>
+              <albedo_map>model://neighborhood_ground/materials/textures/ground.jpg</albedo_map>
+              <roughness>1.0</roughness>
+              <metalness>0.0</metalness>
+            </metal>
+          </pbr>
+        </material>
+      </visual>
+    </link>
+  </model>
+</sdf>

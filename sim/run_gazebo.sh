@@ -6,12 +6,16 @@
 #   sim/run_gazebo.sh --headless --no-intruder --sun 0.4,-0.6,-0.7
 #   sim/run_gazebo.sh --headless --world urban
 #   sim/run_gazebo.sh --world ortho
+#   sim/run_gazebo.sh --world neighborhood
 #   sim/run_gazebo.sh --headless --world ortho --no-people
 #
 # --world urban loads security_patrol_urban.sdf (textured ground, trees,
 # buildings, vehicles, several people) instead of the flat default world.
 # --world ortho loads security_patrol_ortho.sdf: a real drone orthophoto as
 # the ground (sim/make_ortho_ground.py) with people in the protected area.
+# --world neighborhood loads security_patrol_neighborhood.sdf, a street grid
+# with houses, cars, trees and walking people (sim/make_neighborhood.py); fly
+# it with fly_patrol_mission.py --route streets.
 #
 # --no-intruder removes the walking person, so every camera frame is a
 # guaranteed negative (used to collect hard negatives such as the drone's own
@@ -56,6 +60,7 @@ if [[ $NO_INTRUDER == 1 || -n "$SUN" ]]; then
     fi
     if [[ $NO_PEOPLE == 1 ]]; then
         perl -0pi -e 's|\s*<include>\s*<name>person_.*?</include>||gs' "$VARIANT"
+        sed -i '/<actor name=/,/<\/actor>/d' "$VARIANT"
     fi
     if [[ -n "$SUN" ]]; then
         sed -i "s|<direction>.*</direction>|<direction>$SUN</direction>|" "$VARIANT"
@@ -66,6 +71,9 @@ fi
 # The urban ground texture is generated, not stored in git.
 if [[ ! -f "$SIM_DIR/models/urban_ground/materials/textures/ground.jpg" ]]; then
     "$HOME/venvs/security-drone/bin/python" "$SIM_DIR/make_ground_texture.py"
+fi
+if [[ ! -f "$SIM_DIR/models/neighborhood_ground/materials/textures/ground.jpg" ]]; then
+    "$HOME/venvs/security-drone/bin/python" "$SIM_DIR/make_neighborhood.py"
 fi
 
 # Finds model://iris_with_gimbal, model://urban_ground and the ArduPilot plugin.

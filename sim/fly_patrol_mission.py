@@ -25,6 +25,11 @@ The camera sees ~26 x 19.5 m from 15 m and the area is 20 x 20 m. Flying the
 square 5 m off the centre keeps the centre in view on every leg and each edge
 in view on at least one leg, and the area is covered once per lap (~25 s).
 
+--route streets flies the neighborhood world instead
+(sim/worlds/security_patrol_neighborhood.sdf): the trigger waypoint is the
+first crossing, 30 m north of home, and each lap follows the streets past
+houses, parked cars and the park (~480 m, ~2.5 min).
+
 Usage (inside WSL, SITL running):
     python sim/fly_patrol_mission.py --connection tcp:127.0.0.1:5763
 """
@@ -46,6 +51,11 @@ LAP_OFFSET_M = 5      # half side of the patrol square
 # ~25 s a lap, longer than the battery. The Pixhawk's battery failsafe and
 # this final RTL are the backups; the companion's RTL is the normal end.
 MAX_LAPS = 30
+# Neighborhood streets as (north, east) from home: the first crossing, then a
+# lap along the streets that ends back at it.
+STREET_ENTRY = (30, 0)
+STREET_LAP = [(30, 60), (90, 60), (90, 0), (150, 0), (150, -60), (30, -60), (30, 0)]
+STREET_MAX_LAPS = 6     # ~15 min, longer than the battery
 HEARTBEAT_LOST_S = 15
 EARTH_M_PER_DEG = 111_320
 
@@ -57,12 +67,16 @@ def offset(lat, lon, north_m, east_m):
     return lat + dlat, lon + dlon
 
 
-def build_mission(home_lat, home_lon, max_laps=MAX_LAPS):
+def build_mission(home_lat, home_lon, max_laps=MAX_LAPS, route="square"):
     rel = mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT_INT
-    centre = offset(home_lat, home_lon, AREA_NORTH_M, 0)
-    d = LAP_OFFSET_M
-    # North-east, north-west, south-west, south-east corners.
-    corners = [offset(*centre, n, e) for n, e in ((d, d), (d, -d), (-d, -d), (-d, d))]
+    if route == "streets":
+        centre = offset(home_lat, home_lon, *STREET_ENTRY)
+        corners = [offset(home_lat, home_lon, n, e) for n, e in STREET_LAP]
+    else:
+        centre = offset(home_lat, home_lon, AREA_NORTH_M, 0)
+        d = LAP_OFFSET_M
+        # North-east, north-west, south-west, south-east corners.
+        corners = [offset(*centre, n, e) for n, e in ((d, d), (d, -d), (-d, -d), (-d, d))]
     first_corner = 3
     # (frame, command, param1, param2, lat, lon, alt)
     return [
@@ -145,7 +159,9 @@ def arm_when_ready(master, timeout_s=120):
 def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--connection", default="tcp:127.0.0.1:5763")
-    parser.add_argument("--max-laps", type=int, default=MAX_LAPS)
+    parser.add_argument("--route", choices=["square", "streets"], default="square",
+                        help="streets: the neighborhood world's street lap")
+    parser.add_argument("--max-laps", type=int, help=f"default {MAX_LAPS} (streets: {STREET_MAX_LAPS})")
     parser.add_argument("--hover", type=float, metavar="S",
                         help="earlier test layout: hover S seconds, then RTL")
     args = parser.parse_args()
@@ -162,7 +178,8 @@ def main():
     if args.hover:
         items = build_hover_mission(home_lat, home_lon, args.hover)
     else:
-        items = build_mission(home_lat, home_lon, args.max_laps)
+        laps = args.max_laps or (STREET_MAX_LAPS if args.route == "streets" else MAX_LAPS)
+        items = build_mission(home_lat, home_lon, laps, args.route)
     upload_mission(master, items)
     print(f"Mission uploaded ({len(items)} items)")
 

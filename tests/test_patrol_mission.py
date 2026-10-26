@@ -52,3 +52,17 @@ def test_trigger_is_followed_by_a_nav_item():
     items = fly_patrol_mission.build_mission(*HOME)
     after = items[load_config(DEFAULT_CONFIG_PATH)["mission"]["trigger_seq"] + 1]
     assert after[1] == mavlink.MAV_CMD_NAV_WAYPOINT
+
+
+def test_street_route_triggers_at_the_first_crossing_and_loops_back():
+    items = fly_patrol_mission.build_mission(*HOME, max_laps=3, route="streets")
+    trigger_seq = load_config(DEFAULT_CONFIG_PATH)["mission"]["trigger_seq"]
+    entry = fly_patrol_mission.offset(*HOME, *fly_patrol_mission.STREET_ENTRY)
+    assert items[trigger_seq][4:6] == entry
+    assert items[trigger_seq + 1][1] == mavlink.MAV_CMD_NAV_WAYPOINT
+    jump_seq = commands(items).index(mavlink.MAV_CMD_DO_JUMP)
+    _, _, target, repeats, *_ = items[jump_seq]
+    lap = items[target:jump_seq]
+    assert len(lap) == len(fly_patrol_mission.STREET_LAP)
+    assert lap[-1][4:6] == entry          # the lap ends where it started
+    assert repeats == 2

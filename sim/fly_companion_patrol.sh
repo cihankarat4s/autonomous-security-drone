@@ -5,7 +5,7 @@
 # The drone patrols the area until the companion's patrol time is up (config
 # mission.patrol_time_s, or the third argument in seconds) and it sends RTL.
 #
-#   bash sim/fly_companion_patrol.sh <name> [flat|urban|ortho] [patrol seconds]
+#   bash sim/fly_companion_patrol.sh <name> [flat|urban|ortho|neighborhood] [patrol seconds]
 #   bash sim/fly_companion_patrol.sh patrol_test urban 120
 #
 # Afterwards: python sim/summarize_flight_logs.py logs/<name>.csv
@@ -55,7 +55,9 @@ wait_for "companion start" 120 $! grep -q "GLOBAL_POSITION_INT stream requested"
 grep -E "Loaded|Heartbeat" "logs/${NAME}_companion.log"
 
 echo "Flying the patrol mission"
-timeout 1200 "$PY" sim/fly_patrol_mission.py
+ROUTE=square
+[[ "$WORLD" == neighborhood ]] && ROUTE=streets
+timeout 1500 "$PY" sim/fly_patrol_mission.py --route "$ROUTE"
 sleep 3
 echo "== companion"
 grep -E "Trigger|Patrol|patrol|RTL|Sent STATUSTEXT|Detection stopped" "logs/${NAME}_companion.log" || true

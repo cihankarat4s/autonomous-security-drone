@@ -62,6 +62,19 @@ def output_to_source_matrix():
                      [c[1] - o[1], r[1] - o[1], o[1]]], np.float64)
 
 
+def no_data_free(src):
+    """255 where the photo has data, 0 in the black no-data area around it.
+
+    No data is pure black connected to the image border. A brightness
+    threshold instead also blanked dark shadows inside the photo.
+    """
+    black = (src.max(axis=2) == 0).astype(np.uint8)
+    _, labels = cv2.connectedComponents(black)
+    border = np.unique(np.concatenate([labels[0], labels[-1], labels[:, 0], labels[:, -1]]))
+    outside = np.isin(labels, border[border > 0])
+    return np.where(outside, 0, 255).astype(np.uint8)
+
+
 def download():
     if SOURCE.exists():
         return
@@ -73,9 +86,10 @@ def download():
 def main():
     download()
     src = cv2.imread(str(SOURCE))
-    valid = (src.max(axis=2) > 0).astype(np.uint8) * 255   # black = no data
-    # The photo's edge is a ragged dark seam; drop a few pixels of it.
-    valid = cv2.erode(valid, np.ones((9, 9), np.uint8))
+    valid = no_data_free(src)
+    # The photo's edge is a ragged, dark seam; the detector boxed bits of it
+    # as people. Drop ~0.5 m of it.
+    valid = cv2.erode(valid, np.ones((25, 25), np.uint8))
     fill = [int(v) for v in cv2.mean(src, mask=valid)[:3]]
 
     size = (round((X_MAX - X_MIN) / M_PER_PX), round((Y_MAX - Y_MIN) / M_PER_PX))

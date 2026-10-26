@@ -30,3 +30,14 @@ def test_output_matrix_matches_the_point_mapping():
     row = (make_ortho_ground.Y_MAX - 60) / PX
     src = m @ [col, row, 1]
     assert src == pytest.approx(make_ortho_ground.world_to_source(0, 60))
+
+
+def test_dark_areas_inside_the_photo_are_kept():
+    import numpy as np
+    img = np.full((50, 50, 3), 120, np.uint8)
+    img[:, :5] = 0          # no-data border on the left
+    img[20:30, 20:30] = 0   # a black shadow inside the photo
+    valid = make_ortho_ground.no_data_free(img)
+    assert valid[25, 2] == 0
+    assert valid[25, 25] == 255
+    assert valid[25, 40] == 255

@@ -58,123 +58,123 @@
     <!-- Houses and the fire station -->
     <include>
       <name>house_0</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/House 1</uri>
+      <uri>model://neighborhood_house_1</uri>
       <pose>-40.05 47.79 0 0 0 3.142</pose>
     </include>
     <include>
       <name>house_1</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/House 2</uri>
+      <uri>model://neighborhood_house_2</uri>
       <pose>-44.85 72.64 0 0 0 0.000</pose>
     </include>
     <include>
       <name>house_2</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/House 3</uri>
+      <uri>model://neighborhood_house_3</uri>
       <pose>-20.85 46.04 0 0 0 3.142</pose>
     </include>
     <include>
       <name>house_3</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/House 3</uri>
+      <uri>model://neighborhood_house_3</uri>
       <pose>-19.86 73.96 0 0 0 0.000</pose>
     </include>
     <include>
       <name>house_4</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/House 3</uri>
-      <pose>16.85 46.07 0 0 0 0.000</pose>
+      <uri>model://neighborhood_house_2</uri>
+      <pose>17.55 47.36 0 0 0 3.142</pose>
     </include>
     <include>
       <name>house_5</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/House 1</uri>
-      <pose>20.75 72.21 0 0 0 0.000</pose>
+      <uri>model://neighborhood_house_3</uri>
+      <pose>20.85 73.96 0 0 0 0.000</pose>
     </include>
     <include>
       <name>house_6</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/House 1</uri>
-      <pose>40.05 48.54 0 0 0 0.000</pose>
+      <uri>model://neighborhood_house_3</uri>
+      <pose>40.14 46.07 0 0 0 0.000</pose>
     </include>
     <include>
       <name>house_7</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/House 3</uri>
-      <pose>40.14 73.96 0 0 0 0.000</pose>
+      <uri>model://neighborhood_house_2</uri>
+      <pose>40.85 74.19 0 0 0 3.142</pose>
     </include>
     <include>
       <name>house_8</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/House 2</uri>
+      <uri>model://neighborhood_house_2</uri>
       <pose>-44.85 105.81 0 0 0 0.000</pose>
     </include>
     <include>
       <name>house_9</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/House 1</uri>
-      <pose>-43.25 132.21 0 0 0 0.000</pose>
+      <uri>model://neighborhood_house_3</uri>
+      <pose>-43.16 133.96 0 0 0 0.000</pose>
     </include>
     <include>
       <name>house_10</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/House 2</uri>
-      <pose>-21.55 105.81 0 0 0 0.000</pose>
+      <uri>model://neighborhood_house_2</uri>
+      <pose>-15.15 107.36 0 0 0 3.142</pose>
     </include>
     <include>
       <name>house_11</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/House 1</uri>
-      <pose>-16.75 131.46 0 0 0 3.142</pose>
+      <uri>model://neighborhood_house_1</uri>
+      <pose>-20.75 131.46 0 0 0 3.142</pose>
     </include>
     <include>
       <name>house_12</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/House 1</uri>
-      <pose>-44.05 167.79 0 0 0 3.142</pose>
+      <uri>model://neighborhood_house_2</uri>
+      <pose>-40.85 165.81 0 0 0 0.000</pose>
     </include>
     <include>
       <name>house_13</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/House 2</uri>
-      <pose>-17.55 165.81 0 0 0 0.000</pose>
+      <uri>model://neighborhood_house_1</uri>
+      <pose>-16.75 167.79 0 0 0 3.142</pose>
     </include>
     <include>
       <name>house_14</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/House 1</uri>
-      <pose>19.96 167.79 0 0 0 3.142</pose>
+      <uri>model://neighborhood_house_2</uri>
+      <pose>21.55 167.36 0 0 0 3.142</pose>
     </include>
     <include>
       <name>house_15</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/House 2</uri>
+      <uri>model://neighborhood_house_2</uri>
       <pose>44.85 167.36 0 0 0 3.142</pose>
     </include>
     <include>
       <name>house_16</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/House 2</uri>
-      <pose>-77.36 51.55 0 0 0 4.712</pose>
+      <uri>model://neighborhood_house_1</uri>
+      <pose>-78.54 50.75 0 0 0 1.571</pose>
     </include>
     <include>
       <name>house_17</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/House 1</uri>
-      <pose>77.79 50.75 0 0 0 1.571</pose>
+      <uri>model://neighborhood_house_1</uri>
+      <pose>78.54 49.95 0 0 0 4.712</pose>
     </include>
     <include>
       <name>house_18</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/House 1</uri>
-      <pose>-77.79 73.26 0 0 0 4.712</pose>
+      <uri>model://neighborhood_house_3</uri>
+      <pose>-76.07 74.15 0 0 0 1.571</pose>
     </include>
     <include>
       <name>house_19</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/House 3</uri>
-      <pose>76.04 74.15 0 0 0 1.571</pose>
+      <uri>model://neighborhood_house_2</uri>
+      <pose>77.36 72.45 0 0 0 1.571</pose>
     </include>
     <include>
       <name>house_20</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/House 2</uri>
-      <pose>-75.81 109.14 0 0 0 1.571</pose>
+      <uri>model://neighborhood_house_3</uri>
+      <pose>-76.07 106.84 0 0 0 1.571</pose>
     </include>
     <include>
       <name>house_21</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/House 3</uri>
-      <pose>76.04 106.84 0 0 0 1.571</pose>
+      <uri>model://neighborhood_house_1</uri>
+      <pose>77.79 110.74 0 0 0 1.571</pose>
     </include>
     <include>
       <name>house_22</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/House 1</uri>
-      <pose>-78.54 134.05 0 0 0 1.571</pose>
+      <uri>model://neighborhood_house_2</uri>
+      <pose>-77.36 134.86 0 0 0 4.712</pose>
     </include>
     <include>
       <name>house_23</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/House 2</uri>
-      <pose>75.81 134.86 0 0 0 4.712</pose>
+      <uri>model://neighborhood_house_2</uri>
+      <pose>77.36 132.44 0 0 0 1.571</pose>
     </include>
     <include>
       <name>house_24</name>
@@ -189,9 +189,9 @@
       <pose>-32.41 39.20 0 0 0 1.799</pose>
     </include>
     <include>
-      <name>prius_hybrid_1</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Prius Hybrid</uri>
-      <pose>-34.99 80.10 0 0 0 0.000</pose>
+      <name>suv_1</name>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/SUV</uri>
+      <pose>-34.99 80.10 0 0 0 -1.571</pose>
     </include>
     <include>
       <name>mailbox_1</name>
@@ -204,8 +204,8 @@
       <pose>-49.00 80.80 0 0 0 2.560</pose>
     </include>
     <include>
-      <name>hatchback_red_1</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Hatchback red</uri>
+      <name>pickup_1</name>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Pickup</uri>
       <pose>-11.47 39.90 0 0 0 4.712</pose>
     </include>
     <include>
@@ -219,8 +219,8 @@
       <pose>-20.84 54.91 0 0 0 2.874</pose>
     </include>
     <include>
-      <name>suv_1</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/SUV</uri>
+      <name>pickup_2</name>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Pickup</uri>
       <pose>-11.47 80.10 0 0 0 1.571</pose>
     </include>
     <include>
@@ -229,128 +229,158 @@
       <pose>-9.27 82.90 0 0 0 -1.571</pose>
     </include>
     <include>
+      <name>trashbin_1</name>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/TrashBin</uri>
+      <pose>-13.67 85.40 0 0 0 2.799</pose>
+    </include>
+    <include>
       <name>pine_tree_4</name>
       <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Pine Tree</uri>
-      <pose>-25.94 80.80 0 0 0 1.840</pose>
+      <pose>-25.94 80.80 0 0 0 2.724</pose>
     </include>
     <include>
       <name>oak_tree_2</name>
       <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Oak tree</uri>
-      <pose>-22.95 65.09 0 0 0 3.182</pose>
-    </include>
-    <include>
-      <name>mailbox_3</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Mailbox</uri>
-      <pose>27.44 37.10 0 0 0 1.571</pose>
-    </include>
-    <include>
-      <name>oak_tree_3</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Oak tree</uri>
-      <pose>18.57 54.91 0 0 0 0.159</pose>
-    </include>
-    <include>
-      <name>oak_tree_4</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Oak tree</uri>
-      <pose>14.06 60.87 0 0 0 5.556</pose>
-    </include>
-    <include>
-      <name>oak_tree_5</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Oak tree</uri>
-      <pose>40.47 59.13 0 0 0 6.272</pose>
-    </include>
-    <include>
-      <name>mailbox_4</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Mailbox</uri>
-      <pose>50.73 82.90 0 0 0 -1.571</pose>
-    </include>
-    <include>
-      <name>trashbin_1</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/TrashBin</uri>
-      <pose>46.34 85.40 0 0 0 2.613</pose>
+      <pose>-14.72 65.09 0 0 0 5.446</pose>
     </include>
     <include>
       <name>pine_tree_5</name>
       <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Pine Tree</uri>
-      <pose>34.06 80.80 0 0 0 0.471</pose>
+      <pose>11.00 39.20 0 0 0 2.530</pose>
     </include>
     <include>
-      <name>hatchback_blue_1</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Hatchback blue</uri>
-      <pose>-34.99 99.90 0 0 0 4.712</pose>
-    </include>
-    <include>
-      <name>oak_tree_6</name>
+      <name>oak_tree_3</name>
       <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Oak tree</uri>
-      <pose>-42.44 115.97 0 0 0 4.171</pose>
+      <pose>21.54 55.97 0 0 0 5.140</pose>
     </include>
     <include>
-      <name>hatchback_1</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Hatchback</uri>
-      <pose>-33.10 140.10 0 0 0 1.571</pose>
-    </include>
-    <include>
-      <name>pine_tree_6</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Pine Tree</uri>
-      <pose>-50.89 140.80 0 0 0 1.423</pose>
-    </include>
-    <include>
-      <name>pine_tree_7</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Pine Tree</uri>
-      <pose>-25.71 99.20 0 0 0 0.611</pose>
-    </include>
-    <include>
-      <name>pickup_1</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Pickup</uri>
-      <pose>-26.90 140.10 0 0 0 -1.571</pose>
+      <name>mailbox_3</name>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Mailbox</uri>
+      <pose>9.27 82.90 0 0 0 -1.571</pose>
     </include>
     <include>
       <name>trashbin_2</name>
       <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/TrashBin</uri>
-      <pose>-24.70 145.40 0 0 0 0.380</pose>
+      <pose>13.67 85.40 0 0 0 2.778</pose>
     </include>
     <include>
-      <name>pine_tree_8</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Pine Tree</uri>
-      <pose>-9.11 140.80 0 0 0 1.717</pose>
-    </include>
-    <include>
-      <name>oak_tree_7</name>
+      <name>oak_tree_4</name>
       <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Oak tree</uri>
-      <pose>-15.26 120.87 0 0 0 2.245</pose>
-    </include>
-    <include>
-      <name>pine_tree_9</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Pine Tree</uri>
-      <pose>-50.89 159.20 0 0 0 0.412</pose>
-    </include>
-    <include>
-      <name>oak_tree_8</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Oak tree</uri>
-      <pose>-39.34 179.13 0 0 0 1.826</pose>
+      <pose>20.76 65.09 0 0 0 4.237</pose>
     </include>
     <include>
       <name>trashbin_3</name>
       <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/TrashBin</uri>
-      <pose>-22.81 154.60 0 0 0 1.294</pose>
+      <pose>46.34 34.60 0 0 0 2.513</pose>
     </include>
     <include>
-      <name>oak_tree_9</name>
+      <name>pine_tree_6</name>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Pine Tree</uri>
+      <pose>34.06 39.20 0 0 0 1.504</pose>
+    </include>
+    <include>
+      <name>hatchback_red_1</name>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Hatchback red</uri>
+      <pose>48.30 80.10 0 0 0 1.571</pose>
+    </include>
+    <include>
+      <name>pine_tree_7</name>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Pine Tree</uri>
+      <pose>34.30 80.80 0 0 0 0.628</pose>
+    </include>
+    <include>
+      <name>oak_tree_5</name>
       <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Oak tree</uri>
-      <pose>-21.99 175.97 0 0 0 0.089</pose>
+      <pose>-36.65 115.97 0 0 0 0.618</pose>
     </include>
     <include>
       <name>hatchback_red_2</name>
       <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Hatchback red</uri>
-      <pose>9.80 159.90 0 0 0 4.712</pose>
+      <pose>-34.77 140.10 0 0 0 1.571</pose>
+    </include>
+    <include>
+      <name>pine_tree_8</name>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Pine Tree</uri>
+      <pose>-49.23 140.80 0 0 0 0.837</pose>
+    </include>
+    <include>
+      <name>oak_tree_6</name>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Oak tree</uri>
+      <pose>-46.49 125.09 0 0 0 4.697</pose>
+    </include>
+    <include>
+      <name>prius_hybrid_1</name>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Prius Hybrid</uri>
+      <pose>-25.01 99.90 0 0 0 3.142</pose>
+    </include>
+    <include>
+      <name>trashbin_4</name>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/TrashBin</uri>
+      <pose>-22.81 94.60 0 0 0 0.380</pose>
+    </include>
+    <include>
+      <name>pine_tree_9</name>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Pine Tree</uri>
+      <pose>-11.00 99.20 0 0 0 1.717</pose>
+    </include>
+    <include>
+      <name>oak_tree_7</name>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Oak tree</uri>
+      <pose>-15.26 115.97 0 0 0 2.245</pose>
     </include>
     <include>
       <name>pine_tree_10</name>
       <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Pine Tree</uri>
-      <pose>27.60 159.20 0 0 0 1.495</pose>
+      <pose>-27.60 140.80 0 0 0 0.412</pose>
     </include>
     <include>
-      <name>pickup_2</name>
+      <name>oak_tree_8</name>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Oak tree</uri>
+      <pose>-16.04 120.87 0 0 0 1.826</pose>
+    </include>
+    <include>
+      <name>trashbin_5</name>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/TrashBin</uri>
+      <pose>-46.10 154.60 0 0 0 1.294</pose>
+    </include>
+    <include>
+      <name>oak_tree_9</name>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Oak tree</uri>
+      <pose>-45.29 175.97 0 0 0 0.089</pose>
+    </include>
+    <include>
+      <name>pickup_3</name>
       <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Pickup</uri>
+      <pose>-26.90 159.90 0 0 0 4.712</pose>
+    </include>
+    <include>
+      <name>pine_tree_11</name>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Pine Tree</uri>
+      <pose>-9.11 159.20 0 0 0 1.495</pose>
+    </include>
+    <include>
+      <name>prius_hybrid_2</name>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Prius Hybrid</uri>
+      <pose>11.70 159.90 0 0 0 3.142</pose>
+    </include>
+    <include>
+      <name>mailbox_4</name>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Mailbox</uri>
+      <pose>9.50 157.10 0 0 0 1.571</pose>
+    </include>
+    <include>
+      <name>pine_tree_12</name>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Pine Tree</uri>
+      <pose>25.71 159.20 0 0 0 1.057</pose>
+    </include>
+    <include>
+      <name>oak_tree_10</name>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Oak tree</uri>
+      <pose>20.49 175.97 0 0 0 0.437</pose>
+    </include>
+    <include>
+      <name>suv_2</name>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/SUV</uri>
       <pose>34.99 159.90 0 0 0 1.571</pose>
     </include>
     <include>
@@ -359,124 +389,114 @@
       <pose>32.80 157.10 0 0 0 1.571</pose>
     </include>
     <include>
-      <name>pine_tree_11</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Pine Tree</uri>
-      <pose>49.00 159.20 0 0 0 1.057</pose>
-    </include>
-    <include>
-      <name>oak_tree_10</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Oak tree</uri>
-      <pose>43.79 175.97 0 0 0 0.437</pose>
-    </include>
-    <include>
-      <name>prius_hybrid_2</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Prius Hybrid</uri>
-      <pose>-69.90 41.70 0 0 0 4.712</pose>
-    </include>
-    <include>
-      <name>mailbox_6</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Mailbox</uri>
-      <pose>-67.10 39.50 0 0 0 3.142</pose>
-    </include>
-    <include>
-      <name>pine_tree_12</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Pine Tree</uri>
-      <pose>-69.20 55.70 0 0 0 2.234</pose>
-    </include>
-    <include>
       <name>pine_tree_13</name>
       <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Pine Tree</uri>
-      <pose>69.20 57.59 0 0 0 2.653</pose>
-    </include>
-    <include>
-      <name>oak_tree_11</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Oak tree</uri>
-      <pose>89.13 47.45 0 0 0 2.602</pose>
-    </include>
-    <include>
-      <name>hatchback_red_3</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Hatchback red</uri>
-      <pose>-69.90 63.11 0 0 0 6.283</pose>
-    </include>
-    <include>
-      <name>mailbox_7</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Mailbox</uri>
-      <pose>-67.10 60.91 0 0 0 3.142</pose>
+      <pose>49.00 159.20 0 0 0 2.234</pose>
     </include>
     <include>
       <name>pine_tree_14</name>
       <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Pine Tree</uri>
-      <pose>-69.20 80.90 0 0 0 1.469</pose>
+      <pose>-69.20 57.59 0 0 0 2.653</pose>
     </include>
     <include>
-      <name>oak_tree_12</name>
+      <name>oak_tree_11</name>
       <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Oak tree</uri>
-      <pose>-89.13 71.43 0 0 0 0.755</pose>
+      <pose>-89.13 47.45 0 0 0 2.602</pose>
     </include>
     <include>
-      <name>mailbox_8</name>
+      <name>pickup_4</name>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Pickup</uri>
+      <pose>69.90 39.80 0 0 0 3.142</pose>
+    </include>
+    <include>
+      <name>mailbox_6</name>
       <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Mailbox</uri>
-      <pose>67.10 62.57 0 0 0 0.000</pose>
-    </include>
-    <include>
-      <name>mailbox_9</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Mailbox</uri>
-      <pose>-67.10 99.49 0 0 0 3.142</pose>
-    </include>
-    <include>
-      <name>trashbin_4</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/TrashBin</uri>
-      <pose>-64.60 103.89 0 0 0 1.766</pose>
+      <pose>67.10 37.61 0 0 0 0.000</pose>
     </include>
     <include>
       <name>pine_tree_15</name>
       <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Pine Tree</uri>
-      <pose>-69.20 115.70 0 0 0 1.691</pose>
+      <pose>69.20 57.59 0 0 0 1.469</pose>
     </include>
     <include>
-      <name>oak_tree_13</name>
+      <name>oak_tree_12</name>
       <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Oak tree</uri>
-      <pose>-85.97 110.94 0 0 0 3.492</pose>
+      <pose>89.13 48.13 0 0 0 0.755</pose>
     </include>
     <include>
-      <name>trashbin_5</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/TrashBin</uri>
-      <pose>64.60 113.03 0 0 0 2.455</pose>
-    </include>
-    <include>
-      <name>pine_tree_16</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Pine Tree</uri>
-      <pose>69.20 100.77 0 0 0 1.370</pose>
-    </include>
-    <include>
-      <name>oak_tree_14</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Oak tree</uri>
-      <pose>84.91 103.08 0 0 0 2.238</pose>
-    </include>
-    <include>
-      <name>hatchback_red_4</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Hatchback red</uri>
-      <pose>-69.90 123.11 0 0 0 3.142</pose>
-    </include>
-    <include>
-      <name>mailbox_10</name>
+      <name>mailbox_7</name>
       <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Mailbox</uri>
-      <pose>-67.10 120.91 0 0 0 3.142</pose>
+      <pose>-67.10 62.57 0 0 0 3.142</pose>
+    </include>
+    <include>
+      <name>mailbox_8</name>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Mailbox</uri>
+      <pose>67.10 62.80 0 0 0 0.000</pose>
     </include>
     <include>
       <name>trashbin_6</name>
       <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/TrashBin</uri>
-      <pose>-64.60 125.31 0 0 0 0.820</pose>
+      <pose>64.60 67.20 0 0 0 1.766</pose>
+    </include>
+    <include>
+      <name>pine_tree_16</name>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Pine Tree</uri>
+      <pose>69.20 79.01 0 0 0 1.691</pose>
+    </include>
+    <include>
+      <name>oak_tree_13</name>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Oak tree</uri>
+      <pose>85.97 74.24 0 0 0 3.492</pose>
+    </include>
+    <include>
+      <name>trashbin_7</name>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/TrashBin</uri>
+      <pose>-64.60 113.03 0 0 0 2.455</pose>
     </include>
     <include>
       <name>pine_tree_17</name>
       <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Pine Tree</uri>
-      <pose>-69.20 140.90 0 0 0 1.293</pose>
+      <pose>-69.20 100.77 0 0 0 1.370</pose>
     </include>
     <include>
-      <name>hatchback_blue_2</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Hatchback blue</uri>
-      <pose>69.90 125.00 0 0 0 0.000</pose>
+      <name>oak_tree_14</name>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Oak tree</uri>
+      <pose>-84.91 103.08 0 0 0 2.238</pose>
+    </include>
+    <include>
+      <name>pickup_5</name>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Pickup</uri>
+      <pose>69.90 99.80 0 0 0 0.000</pose>
+    </include>
+    <include>
+      <name>mailbox_9</name>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Mailbox</uri>
+      <pose>67.10 97.60 0 0 0 0.000</pose>
+    </include>
+    <include>
+      <name>trashbin_8</name>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/TrashBin</uri>
+      <pose>64.60 102.00 0 0 0 0.820</pose>
+    </include>
+    <include>
+      <name>pine_tree_18</name>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Pine Tree</uri>
+      <pose>69.20 117.59 0 0 0 1.293</pose>
+    </include>
+    <include>
+      <name>hatchback_red_3</name>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Hatchback red</uri>
+      <pose>-69.90 125.00 0 0 0 3.142</pose>
+    </include>
+    <include>
+      <name>mailbox_10</name>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Mailbox</uri>
+      <pose>-67.10 122.80 0 0 0 3.142</pose>
+    </include>
+    <include>
+      <name>trashbin_9</name>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/TrashBin</uri>
+      <pose>-64.60 127.20 0 0 0 1.763</pose>
     </include>
     <include>
       <name>mailbox_11</name>
@@ -484,9 +504,9 @@
       <pose>67.10 122.80 0 0 0 0.000</pose>
     </include>
     <include>
-      <name>trashbin_7</name>
+      <name>trashbin_10</name>
       <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/TrashBin</uri>
-      <pose>64.60 127.20 0 0 0 1.763</pose>
+      <pose>64.60 127.20 0 0 0 1.454</pose>
     </include>
     <include>
       <name>dumpster_1</name>
@@ -494,13 +514,13 @@
       <pose>-42.00 4.00 0 0 0 1.571</pose>
     </include>
     <include>
-      <name>suv_2</name>
+      <name>suv_3</name>
       <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/SUV</uri>
       <pose>20.00 8.00 0 0 0 1.571</pose>
     </include>
     <include>
-      <name>hatchback_blue_3</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Hatchback blue</uri>
+      <name>hatchback_1</name>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Hatchback</uri>
       <pose>25.40 8.00 0 0 0 1.571</pose>
     </include>
     <include>
@@ -509,89 +529,84 @@
       <pose>30.80 8.00 0 0 0 3.142</pose>
     </include>
     <include>
-      <name>hatchback_red_5</name>
+      <name>hatchback_red_4</name>
       <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Hatchback red</uri>
       <pose>36.20 8.00 0 0 0 1.571</pose>
     </include>
     <include>
-      <name>pickup_3</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Pickup</uri>
-      <pose>-70.66 27.10 0 0 0 0.000</pose>
+      <name>suv_4</name>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/SUV</uri>
+      <pose>-82.44 32.90 0 0 0 3.142</pose>
     </include>
     <include>
-      <name>hatchback_blue_4</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Hatchback blue</uri>
-      <pose>-41.63 32.90 0 0 0 3.142</pose>
+      <name>prius_hybrid_4</name>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Prius Hybrid</uri>
+      <pose>15.19 27.10 0 0 0 1.571</pose>
     </include>
     <include>
       <name>hatchback_2</name>
       <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Hatchback</uri>
-      <pose>27.95 32.90 0 0 0 3.142</pose>
-    </include>
-    <include>
-      <name>hatchback_red_6</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Hatchback red</uri>
-      <pose>75.42 32.90 0 0 0 3.142</pose>
-    </include>
-    <include>
-      <name>suv_3</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/SUV</uri>
-      <pose>-31.67 92.90 0 0 0 3.142</pose>
-    </include>
-    <include>
-      <name>hatchback_red_7</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Hatchback red</uri>
-      <pose>25.00 92.90 0 0 0 3.142</pose>
+      <pose>85.89 32.90 0 0 0 3.142</pose>
     </include>
     <include>
       <name>hatchback_3</name>
       <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Hatchback</uri>
-      <pose>85.89 92.90 0 0 0 3.142</pose>
+      <pose>-86.66 92.90 0 0 0 3.142</pose>
     </include>
     <include>
       <name>hatchback_4</name>
       <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Hatchback</uri>
-      <pose>-86.66 152.90 0 0 0 3.142</pose>
+      <pose>-37.38 87.10 0 0 0 0.000</pose>
+    </include>
+    <include>
+      <name>hatchback_red_5</name>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Hatchback red</uri>
+      <pose>22.13 92.90 0 0 0 3.142</pose>
+    </include>
+    <include>
+      <name>prius_hybrid_5</name>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Prius Hybrid</uri>
+      <pose>-83.17 147.10 0 0 0 1.571</pose>
+    </include>
+    <include>
+      <name>hatchback_red_6</name>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Hatchback red</uri>
+      <pose>-36.42 152.90 0 0 0 3.142</pose>
+    </include>
+    <include>
+      <name>hatchback_red_7</name>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Hatchback red</uri>
+      <pose>23.55 147.10 0 0 0 0.000</pose>
+    </include>
+    <include>
+      <name>prius_hybrid_6</name>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Prius Hybrid</uri>
+      <pose>-57.10 68.17 0 0 0 3.142</pose>
     </include>
     <include>
       <name>hatchback_5</name>
       <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Hatchback</uri>
-      <pose>-37.38 147.10 0 0 0 0.000</pose>
+      <pose>-57.10 120.32 0 0 0 1.571</pose>
     </include>
     <include>
-      <name>hatchback_blue_5</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Hatchback blue</uri>
-      <pose>22.13 152.90 0 0 0 3.142</pose>
-    </include>
-    <include>
-      <name>pickup_4</name>
+      <name>pickup_6</name>
       <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Pickup</uri>
-      <pose>-62.90 54.39 0 0 0 4.712</pose>
-    </include>
-    <include>
-      <name>hatchback_blue_6</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Hatchback blue</uri>
-      <pose>-57.10 124.20 0 0 0 1.571</pose>
-    </include>
-    <include>
-      <name>hatchback_6</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Hatchback</uri>
-      <pose>2.90 71.45 0 0 0 1.571</pose>
-    </include>
-    <include>
-      <name>hatchback_7</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Hatchback</uri>
-      <pose>2.90 174.91 0 0 0 1.571</pose>
+      <pose>-62.90 183.77 0 0 0 4.712</pose>
     </include>
     <include>
       <name>hatchback_red_8</name>
       <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Hatchback red</uri>
-      <pose>57.10 73.22 0 0 0 4.712</pose>
+      <pose>-2.90 63.81 0 0 0 4.712</pose>
     </include>
     <include>
-      <name>hatchback_blue_7</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Hatchback blue</uri>
-      <pose>57.10 123.81 0 0 0 4.712</pose>
+      <name>pickup_7</name>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Pickup</uri>
+      <pose>2.90 176.93 0 0 0 1.571</pose>
+    </include>
+    <include>
+      <name>hatchback_6</name>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Hatchback</uri>
+      <pose>57.10 118.06 0 0 0 4.712</pose>
     </include>
     <include>
       <name>lamp_post_1</name>
@@ -731,22 +746,12 @@
     <include>
       <name>fire_hydrant_1</name>
       <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Fire hydrant</uri>
-      <pose>-51.00 83.90 0 0 0 0.000</pose>
+      <pose>9.00 83.90 0 0 0 0.000</pose>
     </include>
     <include>
       <name>fire_hydrant_2</name>
       <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Fire hydrant</uri>
-      <pose>9.00 83.90 0 0 0 0.000</pose>
-    </include>
-    <include>
-      <name>fire_hydrant_3</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Fire hydrant</uri>
-      <pose>69.00 23.90 0 0 0 0.000</pose>
-    </include>
-    <include>
-      <name>fire_hydrant_4</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Fire hydrant</uri>
-      <pose>69.00 143.90 0 0 0 0.000</pose>
+      <pose>69.00 83.90 0 0 0 0.000</pose>
     </include>
     <include>
       <name>foodcourtbenchlong_1</name>
@@ -779,52 +784,52 @@
       <pose>39.17 111.51 0 0 0 5.536</pose>
     </include>
     <include>
-      <name>oak_tree_15</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Oak tree</uri>
-      <pose>48.81 127.17 0 0 0 5.823</pose>
-    </include>
-    <include>
-      <name>pine_tree_18</name>
+      <name>pine_tree_19</name>
       <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Pine Tree</uri>
       <pose>48.02 132.55 0 0 0 4.995</pose>
     </include>
     <include>
-      <name>pine_tree_19</name>
+      <name>pine_tree_20</name>
       <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Pine Tree</uri>
       <pose>35.56 103.37 0 0 0 3.433</pose>
     </include>
     <include>
-      <name>oak_tree_16</name>
+      <name>oak_tree_15</name>
       <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Oak tree</uri>
       <pose>11.79 115.73 0 0 0 6.061</pose>
     </include>
     <include>
-      <name>pine_tree_20</name>
+      <name>pine_tree_21</name>
       <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Pine Tree</uri>
       <pose>45.96 111.81 0 0 0 2.243</pose>
     </include>
     <include>
-      <name>oak_tree_17</name>
+      <name>oak_tree_16</name>
       <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Oak tree</uri>
       <pose>48.91 107.55 0 0 0 5.321</pose>
     </include>
     <include>
-      <name>pine_tree_21</name>
+      <name>pine_tree_22</name>
       <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Pine Tree</uri>
       <pose>35.91 137.57 0 0 0 5.100</pose>
     </include>
     <include>
-      <name>oak_tree_18</name>
+      <name>oak_tree_17</name>
       <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Oak tree</uri>
       <pose>49.87 106.84 0 0 0 1.128</pose>
     </include>
     <include>
-      <name>pine_tree_22</name>
+      <name>pine_tree_23</name>
       <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Pine Tree</uri>
       <pose>10.08 114.98 0 0 0 1.901</pose>
     </include>
     <include>
-      <name>trashbin_8</name>
+      <name>pine_tree_24</name>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Pine Tree</uri>
+      <pose>19.93 104.25 0 0 0 3.043</pose>
+    </include>
+    <include>
+      <name>trashbin_11</name>
       <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/TrashBin</uri>
       <pose>45.00 117.00 0 0 0 0.000</pose>
     </include>
@@ -832,28 +837,28 @@
     <!-- Standing people (person_* so run_gazebo.sh --no-people removes them) -->
     <include>
       <name>person_0</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Walking person</uri>
-      <pose>69.41 41.75 0 0 0 0.459</pose>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Casual female</uri>
+      <pose>68.49 124.20 0 0 0 5.715</pose>
     </include>
     <include>
       <name>person_1</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Standing person</uri>
-      <pose>24.29 38.95 0 0 0 2.185</pose>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Casual female</uri>
+      <pose>-12.98 39.50 0 0 0 4.295</pose>
     </include>
     <include>
       <name>person_2</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Walking person</uri>
-      <pose>68.50 66.40 0 0 0 1.552</pose>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Standing person</uri>
+      <pose>-48.48 159.66 0 0 0 0.434</pose>
     </include>
     <include>
       <name>person_3</name>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Walking person</uri>
-      <pose>47.97 79.76 0 0 0 2.168</pose>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Casual female</uri>
+      <pose>-33.09 100.22 0 0 0 1.667</pose>
     </include>
     <include>
       <name>person_4</name>
       <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Casual female</uri>
-      <pose>-13.19 79.36 0 0 0 4.888</pose>
+      <pose>68.62 65.64 0 0 0 3.181</pose>
     </include>
     <include>
       <name>person_5</name>

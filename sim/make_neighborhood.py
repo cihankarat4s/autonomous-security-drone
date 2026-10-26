@@ -48,15 +48,18 @@ PLAZA = (-45.0, -12.0, 45.0, 30.0 - SIDEWALK_OUT)  # up to the first street's si
 FUEL = "https://fuel.gazebosim.org/1.0/OpenRobotics/models/"
 
 # Footprints in metres (model frame), measured from the meshes: x min/max, y min/max.
+# The houses are Fuel's House 1-3 wrapped in sim/models/neighborhood_house_*
+# with PBR materials (Fuel's Ogre 1 material scripts render black in Harmonic).
 HOUSES = {
-    "House 1": (-8.64, 7.85, -6.84, 6.09),
-    "House 2": (-5.15, 7.56, -4.11, 5.66),
-    "House 3": (-7.08, 6.09, -4.37, 4.34),
+    "model://neighborhood_house_1": (-8.64, 7.85, -6.84, 6.09),
+    "model://neighborhood_house_2": (-5.15, 7.56, -4.11, 5.66),
+    "model://neighborhood_house_3": (-7.08, 6.09, -4.37, 4.34),
 }
 FIRE_STATION = (-10.74, 10.73, -5.74, 6.12)
 # Cars and the yaw that turns each model's long axis onto its x axis.
+# ("Hatchback blue" is left out: its material file points at the red one's texture.)
 CARS = {"SUV": 0.0, "Prius Hybrid": math.pi / 2, "Hatchback": 0.0,
-        "Hatchback red": 0.0, "Hatchback blue": 0.0, "Pickup": 0.0}
+        "Hatchback red": 0.0, "Pickup": 0.0}
 PEOPLE = ("Standing person", "Casual female", "Walking person")
 
 
@@ -137,7 +140,7 @@ def build_layout(rng):
         yaw = math.atan2(t[1], t[0]) + (math.pi if rng.random() < 0.5 else 0.0)
         side = rng.choice((-1, 1))               # driveway left or right of the house
         cx, cy = lot_point(lot, -side * 2.0, SIDEWALK_OUT + SETBACK + depth / 2)
-        houses.append(place_footprint(FUEL + model, box, cx, cy, yaw))
+        houses.append(place_footprint(model, box, cx, cy, yaw))
         drive_along = -side * 2.0 + side * (width / 2 + 2.3)
         driveways.append((lot, drive_along, SIDEWALK_OUT + SETBACK + min(depth, 7.0)))
         street_yaw = math.atan2(n[1], n[0])      # cars in driveways face the street
@@ -224,7 +227,7 @@ def plaza_items():
     fx, fy = -28.0, 6.0
     items = [place_footprint(FUEL + "Fire station", FIRE_STATION, fx, fy, 0.0),
              Item(FUEL + "Dumpster", fx - 14.0, fy - 2.0, math.pi / 2)]
-    for i, car in enumerate(("SUV", "Hatchback blue", "Prius Hybrid", "Hatchback red")):
+    for i, car in enumerate(("SUV", "Hatchback", "Prius Hybrid", "Hatchback red")):
         items.append(Item(FUEL + car, 20.0 + i * 5.4, 8.0, math.pi / 2 + CARS[car]))
     return items
 

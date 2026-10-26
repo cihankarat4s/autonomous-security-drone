@@ -84,6 +84,7 @@ At conf 0.4 the false-positive rates are 14.7%, 3.3%, 0%, 0% and 0% ([full table
 - The VisDrone model without negatives boxed a light patch in the grass, a white object on a sandy yard, a dark gap at a roof edge and, over the grey area outside the photo, the drone's own shadow again.
 - The hard negatives were all synthetic Gazebo frames, yet on real photo texture they cut false-positive frames from 10% to under 1%.
 - YOLO26n, the default model, raised no false alarm but also missed the real pedestrian: its best score for it was 0.21, under the 0.25 threshold. YOLO11n found it in 4 frames at 0.57-0.61, again without false positives. On an earlier flight over the same photo YOLO26n did box the pedestrian (2 frames, 0.32) and a dark roof gap (1 frame). One pedestrian in one photo is too little to rank the models, but it matches the Gazebo hover, where YOLO11n also found more of the hard-to-see people.
+- The ground is a stitched orthomosaic at 4 cm/px, blurrier than a live camera: a Camera Module 3 at 15 m, fed to the detector at 1280 px, sees ~2 cm/px, and stitching smears moving people and leans buildings. The absolute rates are likely pessimistic; the comparison between models on the same frames is the useful part.
 
 ### End-to-end flight (urban world, YOLO26n)
 

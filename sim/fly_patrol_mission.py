@@ -46,6 +46,7 @@ LAP_OFFSET_M = 5      # half side of the patrol square
 # ~25 s a lap, longer than the battery. The Pixhawk's battery failsafe and
 # this final RTL are the backups; the companion's RTL is the normal end.
 MAX_LAPS = 30
+HEARTBEAT_LOST_S = 15
 EARTH_M_PER_DEG = 111_320
 
 
@@ -181,13 +182,22 @@ def wait_until_disarmed(master, timeout_s=1200):
     Gives up after timeout_s, so a stuck simulation does not hang a run.
     """
     deadline = time.monotonic() + timeout_s
+    last_heartbeat = time.monotonic()
     while True:
-        if time.monotonic() > deadline:
+        now = time.monotonic()
+        if now > deadline:
             raise RuntimeError(f"Vehicle still armed after {timeout_s} s")
+        # A closed socket makes recv_match return at once, forever; without
+        # this check the loop spun on "EOF on TCP socket" until the timeout.
+        if now - last_heartbeat > HEARTBEAT_LOST_S:
+            raise RuntimeError(f"No heartbeat for {HEARTBEAT_LOST_S} s, link lost")
         msg = master.recv_match(type=["MISSION_ITEM_REACHED", "HEARTBEAT", "STATUSTEXT"],
                                 blocking=True, timeout=5)
         if msg is None or msg.get_srcSystem() != master.target_system:
+            time.sleep(0.1)
             continue
+        if msg.get_type() == "HEARTBEAT" and msg.get_srcComponent() == master.target_component:
+            last_heartbeat = time.monotonic()
         if msg.get_type() == "MISSION_ITEM_REACHED":
             print(f"Reached item {msg.seq}")
         elif msg.get_type() == "STATUSTEXT":

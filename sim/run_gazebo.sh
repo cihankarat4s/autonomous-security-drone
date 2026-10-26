@@ -6,6 +6,7 @@
 #   sim/run_gazebo.sh --headless --no-intruder --sun 0.4,-0.6,-0.7
 #   sim/run_gazebo.sh --headless --world urban
 #   sim/run_gazebo.sh --world ortho
+#   sim/run_gazebo.sh --headless --world ortho --no-people
 #
 # --world urban loads security_patrol_urban.sdf (textured ground, trees,
 # buildings, vehicles, several people) instead of the flat default world.
@@ -14,7 +15,8 @@
 #
 # --no-intruder removes the walking person, so every camera frame is a
 # guaranteed negative (used to collect hard negatives such as the drone's own
-# shadow). --sun sets the sun direction, which moves and stretches shadows.
+# shadow). --no-people also removes the standing people (person_* models).
+# --sun sets the sun direction, which moves and stretches shadows.
 #
 # Then start SITL in a second terminal with sim/run_sitl.sh.
 # Restart Gazebo and SITL together: a lone SITL restart can hang the plugin.
@@ -25,12 +27,14 @@ WORLD="$SIM_DIR/worlds/security_patrol.sdf"
 
 HEADLESS=0
 NO_INTRUDER=0
+NO_PEOPLE=0
 SUN=""
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --headless) HEADLESS=1 ;;
         --world) WORLD="$SIM_DIR/worlds/security_patrol_$2.sdf"; shift ;;
         --no-intruder) NO_INTRUDER=1 ;;
+        --no-people) NO_INTRUDER=1; NO_PEOPLE=1 ;;
         # Comma-separated, so the value survives Windows -> WSL quoting.
         --sun) SUN="${2//,/ }"; shift ;;
         *) echo "Unknown option $1" >&2; exit 1 ;;
@@ -49,6 +53,9 @@ if [[ $NO_INTRUDER == 1 || -n "$SUN" ]]; then
     cp "$WORLD" "$VARIANT"
     if [[ $NO_INTRUDER == 1 ]]; then
         sed -i '/<actor name="intruder">/,/<\/actor>/d' "$VARIANT"
+    fi
+    if [[ $NO_PEOPLE == 1 ]]; then
+        perl -0pi -e 's|\s*<include>\s*<name>person_.*?</include>||gs' "$VARIANT"
     fi
     if [[ -n "$SUN" ]]; then
         sed -i "s|<direction>.*</direction>|<direction>$SUN</direction>|" "$VARIANT"

@@ -3,7 +3,8 @@
 # Gazebo (headless, no intruder) -> SITL -> frame capture -> negative mission
 # -> shut everything down. Gazebo and SITL output go to logs/collect_<name>_*.log.
 #
-#   bash sim/collect_negative_flight.sh <name> <flat|urban> [sun x,y,z]
+#   bash sim/collect_negative_flight.sh <name> <flat|urban|ortho> [sun x,y,z]
+#   bash sim/collect_negative_flight.sh ortho_a ortho     # no people at all
 #   bash sim/collect_negative_flight.sh urban_a urban
 #   bash sim/collect_negative_flight.sh urban_c urban 0.15,0.1,-1
 set -euo pipefail
@@ -18,6 +19,7 @@ mkdir -p logs
 
 GZ_ARGS=(--headless --no-intruder)
 [[ "$ZONE" == urban ]] && GZ_ARGS+=(--world urban)
+[[ "$ZONE" == ortho ]] && GZ_ARGS+=(--world ortho --no-people)
 [[ -n "$SUN" ]] && GZ_ARGS+=(--sun "$SUN")
 
 cleanup() {

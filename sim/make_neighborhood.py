@@ -251,6 +251,27 @@ def static_people(rng, driveways):
     return people
 
 
+def dogs(rng, people, driveways):
+    """Labradors (sim/models/labrador_dog): some next to people, some alone.
+
+    The lone dogs are on purpose: a detector should not call a dog a person.
+    Named dog_*, so run_gazebo.sh --no-people keeps them.
+    """
+    out = []
+    for person in people[:3] + people[-4:-2]:          # yard and park people
+        a = rng.uniform(0, 2 * math.pi)
+        out.append(Item("model://labrador_dog", person.x + 1.2 * math.cos(a),
+                        person.y + 1.2 * math.sin(a), rng.uniform(0, 2 * math.pi)))
+    d = HALF_ROAD + CURB + 1.25
+    out.append(Item("model://labrador_dog", -24.0, 30.0 + d, 0.0))          # alone on a sidewalk
+    out.append(Item("model://labrador_dog", 60.0 + d, 70.0, math.pi / 2))
+    for lot, along, _ in rng.sample(driveways, 2):                           # alone on front lawns
+        x, y = lot_point(lot, along - 4.0, SIDEWALK_OUT + 2.0)
+        out.append(Item("model://labrador_dog", x, y, rng.uniform(0, 2 * math.pi)))
+    out.append(Item("model://labrador_dog", 8.0, -6.0, 2.5))                 # on the plaza
+    return out
+
+
 def walkers():
     """Sidewalk routes of the walking actors: (name, [(x, y), ...], closed)."""
     d = HALF_ROAD + CURB + 1.25          # middle of the sidewalk
@@ -463,9 +484,10 @@ HEADER = """<?xml version="1.0" ?>
 
   A suburban street grid north of home: E-W streets at y = 30, 90, 150 and
   N-S streets at x = -60, 0, 60, 24 houses, a park in the north-east block,
-  parked cars, street lamps, trees, standing people and people walking on
-  the sidewalks. Home (0, 0) is a landing pad on a plaza with a fire station.
-  The patrol mission (sim/fly_patrol_mission.py --route streets) flies along
+  parked cars, street lamps, trees, standing people, people walking on the
+  sidewalks and dogs ("Labrador Dog" by kenchoo, Sketchfab, CC-BY-4.0).
+  Home (0, 0) is a landing pad on a plaza with a fire station. The patrol
+  mission (sim/fly_patrol_mission.py --route streets) flies along
   the streets at 15 m; every model is lower than that.
 
   Frame: +X = east, +Y = north. World name stays "security_patrol" so the
@@ -570,7 +592,7 @@ def actor(name, route, closed):
 """
 
 
-def write_world(houses, items, people):
+def write_world(houses, items, people, dog_items):
     parts = [HEADER, "\n    <!-- Houses and the fire station -->\n"]
     parts += [include(f"house_{i}", h) for i, h in enumerate(houses)]
     parts.append("\n    <!-- Cars, trees, lamps, street furniture -->\n")
@@ -581,6 +603,8 @@ def write_world(houses, items, people):
         parts.append(include(f"{stem}_{counts[stem]}", item))
     parts.append("\n    <!-- Standing people (person_* so run_gazebo.sh --no-people removes them) -->\n")
     parts += [include(f"person_{i}", p) for i, p in enumerate(people)]
+    parts.append("\n    <!-- Dogs (named dog_*, kept by --no-people) -->\n")
+    parts += [include(f"dog_{i}", d) for i, d in enumerate(dog_items)]
     parts.append("\n    <!-- People walking on the sidewalks and round the park -->\n")
     parts += [actor(name, route, closed) for name, route, closed in walkers()]
     parts.append(FOOTER)
@@ -594,9 +618,10 @@ def main():
     houses.append(plaza[0])
     items += plaza[1:] + street_items(rng) + park_items(rng)
     people = static_people(rng, driveways)
-    write_world(houses, items, people)
+    dog_items = dogs(rng, people, driveways)
+    write_world(houses, items, people, dog_items)
     print(f"Saved {WORLD}: {len(houses)} buildings, {len(items)} objects, "
-          f"{len(people)} standing people, {len(walkers())} walkers")
+          f"{len(people)} standing people, {len(walkers())} walkers, {len(dog_items)} dogs")
 
     ground = paint_ground(np.random.default_rng(SEED), driveways)
     TEXTURE.parent.mkdir(parents=True, exist_ok=True)

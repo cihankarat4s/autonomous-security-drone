@@ -5,9 +5,10 @@
 
   A suburban street grid north of home: E-W streets at y = 30, 90, 150 and
   N-S streets at x = -60, 0, 60, 24 houses, a park in the north-east block,
-  parked cars, street lamps, trees, standing people and people walking on
-  the sidewalks. Home (0, 0) is a landing pad on a plaza with a fire station.
-  The patrol mission (sim/fly_patrol_mission.py --route streets) flies along
+  parked cars, street lamps, trees, standing people, people walking on the
+  sidewalks and dogs ("Labrador Dog" by kenchoo, Sketchfab, CC-BY-4.0).
+  Home (0, 0) is a landing pad on a plaza with a fire station. The patrol
+  mission (sim/fly_patrol_mission.py --route streets) flies along
   the streets at 15 m; every model is lower than that.
 
   Frame: +X = east, +Y = north. World name stays "security_patrol" so the
@@ -889,6 +890,58 @@
       <name>person_10</name>
       <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Standing person</uri>
       <pose>-14.00 4.00 0 0 0 3.000</pose>
+    </include>
+
+    <!-- Dogs (named dog_*, kept by --no-people) -->
+    <include>
+      <name>dog_0</name>
+      <uri>model://labrador_dog</uri>
+      <pose>67.90 125.25 0 0 0 5.700</pose>
+    </include>
+    <include>
+      <name>dog_1</name>
+      <uri>model://labrador_dog</uri>
+      <pose>-13.18 38.31 0 0 0 5.386</pose>
+    </include>
+    <include>
+      <name>dog_2</name>
+      <uri>model://labrador_dog</uri>
+      <pose>-49.47 160.35 0 0 0 1.111</pose>
+    </include>
+    <include>
+      <name>dog_3</name>
+      <uri>model://labrador_dog</uri>
+      <pose>33.42 126.87 0 0 0 1.383</pose>
+    </include>
+    <include>
+      <name>dog_4</name>
+      <uri>model://labrador_dog</uri>
+      <pose>33.55 127.49 0 0 0 2.190</pose>
+    </include>
+    <include>
+      <name>dog_5</name>
+      <uri>model://labrador_dog</uri>
+      <pose>-24.00 35.45 0 0 0 0.000</pose>
+    </include>
+    <include>
+      <name>dog_6</name>
+      <uri>model://labrador_dog</uri>
+      <pose>65.45 70.00 0 0 0 1.571</pose>
+    </include>
+    <include>
+      <name>dog_7</name>
+      <uri>model://labrador_dog</uri>
+      <pose>-13.80 141.30 0 0 0 5.225</pose>
+    </include>
+    <include>
+      <name>dog_8</name>
+      <uri>model://labrador_dog</uri>
+      <pose>-30.90 158.70 0 0 0 3.706</pose>
+    </include>
+    <include>
+      <name>dog_9</name>
+      <uri>model://labrador_dog</uri>
+      <pose>8.00 -6.00 0 0 0 2.500</pose>
     </include>
 
     <!-- People walking on the sidewalks and round the park -->

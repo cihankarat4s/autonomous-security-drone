@@ -7,6 +7,7 @@
 #
 #   bash sim/fly_companion_patrol.sh <name> [flat|urban|ortho|neighborhood] [patrol seconds]
 #   bash sim/fly_companion_patrol.sh patrol_test urban 120
+#   GZ_EXTRA="--no-people" bash sim/fly_companion_patrol.sh dogs_only neighborhood 150
 #
 # Afterwards: python sim/summarize_flight_logs.py logs/<name>.csv
 set -euo pipefail
@@ -23,6 +24,9 @@ rm -rf "logs/$NAME" "logs/$NAME.csv"
 COMPANION_ARGS=()
 [[ -n "$PATROL_S" ]] && COMPANION_ARGS+=(--patrol-time "$PATROL_S")
 GZ_ARGS=(--headless)
+# Extra run_gazebo.sh options, e.g. GZ_EXTRA="--no-people" for a false-positive run.
+read -r -a EXTRA <<< "${GZ_EXTRA:-}"
+GZ_ARGS+=("${EXTRA[@]}")
 [[ "$WORLD" != flat ]] && GZ_ARGS+=(--world "$WORLD")
 
 cleanup() {

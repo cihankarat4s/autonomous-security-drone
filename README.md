@@ -64,19 +64,26 @@ Fix: fly Gazebo missions in a world with nobody in it (several sun angles, 6-25 
 
 Test-dev mAP stayed the same. The cost showed up in a held-out Gazebo flight: the YOLOv8n negatives model found the *second* of two people in fewer frames, especially people with long shadows. YOLO11n and YOLO26n trained the same way kept more of them, which together with test-dev and equal speed is why YOLO26n is the default ([threshold sweep](docs/results/threshold_sweep.csv)).
 
-### False positives on a real photo
+### A real photo as the ground
 
-A generated ground texture is easy for a detector. The orthophoto world (`--world ortho`) uses a real 4 cm/px drone orthophoto as the ground: a park and a parking lot in Split, Croatia ("Perivoj Ane Roje", [OpenAerialMap](https://openaerialmap.org), CC-BY 4.0, WebODM / om1s186, 2022). [`sim/make_ortho_ground.py`](sim/make_ortho_ground.py) downloads it and rotates it so that the park is 60 m north of the lot, and the Gazebo sun matches the photo's shadows. A person-free flight over the lot, a school roof and yard, houses, a road with parked cars and the park, 8-20 m, 299 frames:
+A generated ground texture is easy for a detector. The orthophoto world (`--world ortho`) uses a real 4 cm/px drone orthophoto as the ground: a park and a parking lot in Split, Croatia ("Perivoj Ane Roje", [OpenAerialMap](https://openaerialmap.org), CC-BY 4.0, WebODM / om1s186, 2022). [`sim/make_ortho_ground.py`](sim/make_ortho_ground.py) downloads it and rotates it so that the park is 60 m north of the lot, and the Gazebo sun matches the photo's shadows.
 
-| Frames with a false positive | conf 0.25 | conf 0.4 |
+A flight with the 3D people removed, over the lot, a school roof and yard, houses, a road with parked cars and the park, 8-20 m, 299 frames. The photo turned out to contain one real pedestrian, a dark figure ~0.35 m across on a shaded road, in view in ~5 frames. Every box was sorted into "the pedestrian" or "false positive" by [`training/split_photo_person.py`](training/split_photo_person.py) and then checked by eye:
+
+| conf 0.25 | Frames with the real pedestrian | Frames with a false positive |
 |---|---|---|
-| YOLOv8n, COCO weights | 19.7% | 14.7% |
-| YOLOv8n + VisDrone | 11.7% | 4.3% |
-| YOLOv8n + VisDrone + negatives | 2.0% | 0.7% |
-| YOLO11n + VisDrone + negatives | 1.3% | 1.3% |
-| **YOLO26n + VisDrone + negatives** | **0%** | **0%** |
+| YOLOv8n, COCO weights | 0 | 19.7% |
+| YOLOv8n + VisDrone | 4 | 10.4% |
+| YOLOv8n + VisDrone + negatives | 4 | 0.7% |
+| YOLO11n + VisDrone + negatives | 4 | 0% |
+| YOLO26n + VisDrone + negatives (used) | 0 | 0% |
 
-The COCO model boxed parked cars seen from above. Most boxes of the fine-tuned models are on one small dark object on the road, ~0.3 m across, probably an animal; the photo is not sharp enough to tell. On an earlier flight over the same photo YOLO26n boxed it too (2 frames) and a dark gap at a roof edge (1 frame), so 0% here is one flight, not a guarantee. The hard negatives were all synthetic Gazebo frames, yet they cut false positives on real photo texture about sixfold.
+At conf 0.4 the false-positive rates are 14.7%, 3.3%, 0%, 0% and 0% ([full table](docs/results/ortho_negatives.csv)).
+
+- The COCO model boxed parked cars and their shadows seen from above, and never the pedestrian.
+- The VisDrone model without negatives boxed a light patch in the grass, a white object on a sandy yard, a dark gap at a roof edge and, over the grey area outside the photo, the drone's own shadow again.
+- The hard negatives were all synthetic Gazebo frames, yet on real photo texture they cut false-positive frames from 10% to under 1%.
+- YOLO26n, the default model, raised no false alarm but also missed the real pedestrian: its best score for it was 0.21, under the 0.25 threshold. YOLO11n found it in 4 frames at 0.57-0.61, again without false positives. On an earlier flight over the same photo YOLO26n did box the pedestrian (2 frames, 0.32) and a dark roof gap (1 frame). One pedestrian in one photo is too little to rank the models, but it matches the Gazebo hover, where YOLO11n also found more of the hard-to-see people.
 
 ### End-to-end flight (urban world, YOLO26n)
 
@@ -114,6 +121,8 @@ Things that went wrong or were not what I expected, and what I changed:
 - **A dataset bug that looked like training.** A symlinked image folder made Ultralytics read the original 10-class labels, mark almost every image "corrupt" and train on nothing, without an error. Images are now hard-linked.
 - **Several boxes on one person.** YOLO26n is NMS-free and sometimes puts nested boxes on one person (body, body + shadow), so "1 person" was reported as up to 5. Their IoU is low, so plain NMS would not merge them; [`merge_overlapping()`](src/security_drone/detection/detector.py) drops a box that covers most of a more confident one.
 - **I corrected one of my own claims.** A first threshold sweep suggested the negatives model beat the old one on every axis at conf 0.25; it was counting those nested boxes as extra people. After deduplicating and checking on a held-out flight, the claim did not hold, and the table above says what did.
+- **A "false positive" was a person.** On the orthophoto flight most boxes of the fine-tuned models were on one small dark object, and I first wrote it off as probably an animal. A second look by eye showed a real pedestrian. Counted correctly, the model with the cleanest record (YOLO26n, 0 false positives) was also the one that missed the only real person. "Person-free" test data needs checking, not assuming.
+- **Two texture bugs looked like detector errors.** The photo's ragged dark edge was boxed as people; trimming it with a brightness threshold then blanked dark shadows inside the photo with grey patches, whose edges were boxed too. No-data is now only the black area connected to the image border.
 
 ## Running it
 
@@ -161,7 +170,7 @@ media/images/         figures used in this README
 
 - Everything after 2025 was tested in simulation only. The Gazebo people and shadows are rendered, not real, and the hard negatives are synthetic.
 - No measurement on a Raspberry Pi; the CPU numbers are from a laptop.
-- I have no aerial footage of my own, so the real-image tests are VisDrone test-dev and one orthophoto used as Gazebo ground; on that photo the people are still rendered 3D models.
+- I have no aerial footage of my own, so the real-image tests are VisDrone test-dev and one orthophoto used as Gazebo ground. On that photo the people in the patrol are rendered 3D models; the only real person is one pedestrian seen in ~5 frames.
 
 ## Original hardware (2025)
 

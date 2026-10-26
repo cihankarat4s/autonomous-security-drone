@@ -1,0 +1,11 @@
+model,folder,images,conf,images_with_false_positive,rate,boxes
+yolov8n.pt,ortho_c,299,0.25,59,0.197,72
+yolov8n_visdrone_person.pt,ortho_c,299,0.25,35,0.117,36
+yolov8n_visdrone_person_neg.pt,ortho_c,299,0.25,6,0.020,6
+yolo11n_visdrone_person_neg.pt,ortho_c,299,0.25,4,0.013,4
+yolo26n_visdrone_person_neg.pt,ortho_c,299,0.25,0,0.000,0
+yolov8n.pt,ortho_c,299,0.4,44,0.147,48
+yolov8n_visdrone_person.pt,ortho_c,299,0.4,13,0.043,13
+yolov8n_visdrone_person_neg.pt,ortho_c,299,0.4,2,0.007,2
+yolo11n_visdrone_person_neg.pt,ortho_c,299,0.4,4,0.013,4
+yolo26n_visdrone_person_neg.pt,ortho_c,299,0.4,0,0.000,0

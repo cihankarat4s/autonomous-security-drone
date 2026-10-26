@@ -64,6 +64,20 @@ Fix: fly Gazebo missions in a world with nobody in it (several sun angles, 6-25 
 
 Test-dev mAP stayed the same. The cost showed up in a held-out Gazebo flight: the YOLOv8n negatives model found the *second* of two people in fewer frames, especially people with long shadows. YOLO11n and YOLO26n trained the same way kept more of them, which together with test-dev and equal speed is why YOLO26n is the default ([threshold sweep](docs/results/threshold_sweep.csv)).
 
+### False positives on a real photo
+
+A generated ground texture is easy for a detector. The orthophoto world (`--world ortho`) uses a real 4 cm/px drone orthophoto as the ground: a park and a parking lot in Split, Croatia ("Perivoj Ane Roje", [OpenAerialMap](https://openaerialmap.org), CC-BY 4.0, WebODM / om1s186, 2022). [`sim/make_ortho_ground.py`](sim/make_ortho_ground.py) downloads it and rotates it so that the park is 60 m north of the lot, and the Gazebo sun matches the photo's shadows. A person-free flight over the lot, a school roof and yard, houses, a road with parked cars and the park, 8-20 m, 299 frames:
+
+| Frames with a false positive | conf 0.25 | conf 0.4 |
+|---|---|---|
+| YOLOv8n, COCO weights | 19.7% | 14.7% |
+| YOLOv8n + VisDrone | 11.7% | 4.3% |
+| YOLOv8n + VisDrone + negatives | 2.0% | 0.7% |
+| YOLO11n + VisDrone + negatives | 1.3% | 1.3% |
+| **YOLO26n + VisDrone + negatives** | **0%** | **0%** |
+
+The COCO model boxed parked cars seen from above. Most boxes of the fine-tuned models are on one small dark object on the road, ~0.3 m across, probably an animal; the photo is not sharp enough to tell. On an earlier flight over the same photo YOLO26n boxed it too (2 frames) and a dark gap at a roof edge (1 frame), so 0% here is one flight, not a guarantee. The hard negatives were all synthetic Gazebo frames, yet they cut false positives on real photo texture about sixfold.
+
 ### End-to-end flight (urban world, YOLO26n)
 
 [`sim/fly_companion_patrol.sh`](sim/fly_companion_patrol.sh) runs Gazebo, SITL, the companion and the mission unattended. Patrol flight, with the patrol time shortened to 2 min for the test:
@@ -114,7 +128,7 @@ python3 -m venv --system-site-packages ~/venvs/security-drone   # system package
 
 The trained weights are not in git. Download `yolo26n_visdrone_person_neg.pt` from the [Releases](https://github.com/cihankarat4s/autonomous-security-drone/releases) page into the repository root, or train it with [`training/colab_train.ipynb`](training/colab_train.ipynb). To use the COCO weights instead, set `detection.model: yolov8n.pt` and `detection.confidence: 0.4` in [`config/default.yaml`](config/default.yaml).
 
-One command, unattended (`urban` or `flat` world, optional patrol time in seconds):
+One command, unattended (`urban`, `ortho` or `flat` world, optional patrol time in seconds):
 
 ```bash
 bash sim/fly_companion_patrol.sh demo urban 120
@@ -123,7 +137,7 @@ bash sim/fly_companion_patrol.sh demo urban 120
 Or step by step, one terminal each, in this order:
 
 ```bash
-bash sim/run_gazebo.sh --world urban      # drop --world for the flat world; add --headless for no GUI
+bash sim/run_gazebo.sh --world urban      # or --world ortho; drop --world for the flat world; --headless for no GUI
 bash sim/run_sitl.sh                      # SITL + MAVProxy
 ~/venvs/security-drone/bin/python -m security_drone.main   # companion, TCP 5762
 ~/venvs/security-drone/bin/python sim/fly_patrol_mission.py  # uploads and flies the patrol, TCP 5763
@@ -147,7 +161,7 @@ media/images/         figures used in this README
 
 - Everything after 2025 was tested in simulation only. The Gazebo people and shadows are rendered, not real, and the hard negatives are synthetic.
 - No measurement on a Raspberry Pi; the CPU numbers are from a laptop.
-- I have no aerial footage of my own, so the only real-image test is VisDrone test-dev.
+- I have no aerial footage of my own, so the real-image tests are VisDrone test-dev and one orthophoto used as Gazebo ground; on that photo the people are still rendered 3D models.
 
 ## Original hardware (2025)
 

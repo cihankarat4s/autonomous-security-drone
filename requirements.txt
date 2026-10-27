@@ -4,3 +4,4 @@ pytest
 numpy
 opencv-python
 ultralytics
+lap  # ByteTrack in ultralytics (object tracking for the alarm)

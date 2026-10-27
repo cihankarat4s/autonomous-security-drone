@@ -41,18 +41,23 @@ def parse_args():
     parser.add_argument("--frame-log", help="write one CSV row per processed frame here")
     parser.add_argument("--save-all-detections", action="store_true",
                         help="save every annotated detection frame, e.g. to inspect false positives")
+    parser.add_argument("--record-dir",
+                        help="save every processed camera frame here, to replay detection offline")
     return parser.parse_args()
 
 
 class Companion:
     """Main loop: MAVLink telemetry, trigger waypoint, detection and alarm."""
 
-    def __init__(self, master, config, camera, detector, frame_log=None, save_all=False):
+    def __init__(self, master, config, camera, detector, frame_log=None, save_all=False,
+                 record_dir=None):
         self.master = master
         self.camera = camera
         self.detector = detector
         self.frame_log = frame_log
         self.save_all = save_all
+        self.record_dir = Path(record_dir) if record_dir else None
+        self.recorded = 0
         self.detection_config = config["detection"]
         self.watcher = TriggerWatcher(config["mission"]["trigger_seq"])
         self.patrol = PatrolTimer(config["mission"]["patrol_time_s"])
@@ -189,6 +194,8 @@ class Companion:
                 alt = self.position.relative_alt_m if self.position else None
                 self.frame_log.write(now - self.detection_started, self.last_reached_seq,
                                      alt, result.detections, result.inference_s)
+            if self.record_dir is not None:
+                self.record_frame(result.frame, now)
             count = len(result.detections)
             if count:
                 best = max(d.confidence for d in result.detections)
@@ -212,6 +219,13 @@ class Companion:
         text = threat_text(count, lat, lon, datetime.datetime.now(datetime.timezone.utc))
         send_statustext(self.master, text)
         log.info("Sent STATUSTEXT: %s", text)
+
+    def record_frame(self, frame, now):
+        """Save the raw frame, named by order, time since detection start and leg."""
+        self.record_dir.mkdir(parents=True, exist_ok=True)
+        name = f"{self.recorded:05d}_t{now - self.detection_started:07.2f}_seq{self.last_reached_seq}.jpg"
+        cv2.imwrite(str(self.record_dir / name), frame, [cv2.IMWRITE_JPEG_QUALITY, 92])
+        self.recorded += 1
 
     def save_snapshot(self, result, now):
         """Keep the first annotated detection as evidence (or all with save_all)."""
@@ -276,7 +290,7 @@ def main():
 
     frame_log = FrameLog(args.frame_log) if args.frame_log else None
     companion = Companion(master, config, camera, detector, frame_log,
-                          save_all=args.save_all_detections)
+                          save_all=args.save_all_detections, record_dir=args.record_dir)
     try:
         companion.run()
     except KeyboardInterrupt:

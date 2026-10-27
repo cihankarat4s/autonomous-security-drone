@@ -23,6 +23,9 @@ rm -rf "logs/$NAME" "logs/$NAME.csv"
 
 COMPANION_ARGS=()
 [[ -n "$PATROL_S" ]] && COMPANION_ARGS+=(--patrol-time "$PATROL_S")
+# Extra companion options, e.g. COMPANION_EXTRA="--record-dir logs/x_frames".
+read -r -a CEXTRA <<< "${COMPANION_EXTRA:-}"
+COMPANION_ARGS+=("${CEXTRA[@]}")
 GZ_ARGS=(--headless)
 # Extra run_gazebo.sh options, e.g. GZ_EXTRA="--no-people" for a false-positive run.
 read -r -a EXTRA <<< "${GZ_EXTRA:-}"

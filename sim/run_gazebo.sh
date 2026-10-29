@@ -8,6 +8,7 @@
 #   sim/run_gazebo.sh --world ortho
 #   sim/run_gazebo.sh --world neighborhood
 #   sim/run_gazebo.sh --headless --world ortho --no-people
+#   sim/run_gazebo.sh --headless --world neighborhood --pitch 45
 #
 # --world urban loads security_patrol_urban.sdf (textured ground, trees,
 # buildings, vehicles, several people) instead of the flat default world.
@@ -21,6 +22,8 @@
 # guaranteed negative (used to collect hard negatives such as the drone's own
 # shadow). --no-people also removes the standing people (person_* models).
 # --sun sets the sun direction, which moves and stretches shadows.
+# --pitch sets the camera angle below the horizon in degrees: 90 (default)
+# looks straight down, 45 looks ahead and down like most VisDrone images.
 #
 # Then start SITL in a second terminal with sim/run_sitl.sh.
 # Restart Gazebo and SITL together: a lone SITL restart can hang the plugin.
@@ -33,6 +36,7 @@ HEADLESS=0
 NO_INTRUDER=0
 NO_PEOPLE=0
 SUN=""
+PITCH_DEG=90
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --headless) HEADLESS=1 ;;
@@ -41,6 +45,7 @@ while [[ $# -gt 0 ]]; do
         --no-people) NO_INTRUDER=1; NO_PEOPLE=1 ;;
         # Comma-separated, so the value survives Windows -> WSL quoting.
         --sun) SUN="${2//,/ }"; shift ;;
+        --pitch) PITCH_DEG="$2"; shift ;;
         *) echo "Unknown option $1" >&2; exit 1 ;;
     esac
     shift
@@ -83,13 +88,14 @@ export GZ_SIM_SYSTEM_PLUGIN_PATH="$HOME/ardupilot_gazebo/build:${GZ_SIM_SYSTEM_P
 export MESA_D3D12_DEFAULT_ADAPTER_NAME=NVIDIA
 
 # The gimbal starts at the horizon. Point it straight down (like the real drone's
-# overhead camera) and zoom in to a Pi-camera-like field of view (~80 deg instead
+# overhead camera) or to --pitch and zoom in to a Pi-camera-like field of view (~80 deg instead
 # of 115 deg), so a person is about 40 px tall from 15 m. The joint
 # controller keeps the last command, so this only has to be sent once.
 (
     until gz topic -l 2>/dev/null | grep -q "^/gimbal/cmd_pitch$"; do sleep 1; done
     sleep 2
-    gz topic -t /gimbal/cmd_pitch -m gz.msgs.Double -p "data: 1.5708"
+    PITCH_RAD=$(awk -v d="$PITCH_DEG" 'BEGIN { printf "%.4f", d * 3.14159265 / 180 }')
+    gz topic -t /gimbal/cmd_pitch -m gz.msgs.Double -p "data: $PITCH_RAD"
     gz topic -t /model/gimbal/sensor/camera/zoom/cmd_zoom -m gz.msgs.Double -p "data: 1.8"
 ) &
 

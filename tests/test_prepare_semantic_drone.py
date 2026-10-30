@@ -25,3 +25,20 @@ def test_crop_drops_boxes_mostly_outside():
     assert len(sds.crop_labels([(90, 0, 110, 20)], 0, 0, 100, 100)) == 1
     assert sds.crop_labels([(95, 0, 115, 20)], 0, 0, 100, 100) == []
     assert sds.crop_labels([(200, 0, 220, 20)], 0, 0, 100, 100) == []
+
+
+def test_crop_labels_keep_the_class():
+    assert sds.crop_labels([(0, 0, 10, 10)], 0, 0, 100, 100, cls=3)[0].startswith("3 ")
+
+
+def test_mask_boxes_join_parts_and_drop_noise(tmp_path):
+    import cv2
+    import numpy as np
+
+    colors = {"car": (0, 0, 255), "bicycle": (0, 255, 0), "dog": (255, 0, 0)}
+    image = np.zeros((400, 600, 3), np.uint8)
+    image[40:120, 40:200] = colors["car"]
+    image[300:304, 300:304] = colors["dog"]        # 16 px: noise
+    path = tmp_path / "label.png"
+    cv2.imwrite(str(path), image)
+    assert sds.mask_boxes(path, colors) == {3: [(40, 40, 200, 120)]}

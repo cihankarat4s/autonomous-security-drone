@@ -6,9 +6,9 @@ The flight controller runs ArduPilot; a companion computer listens to it over MA
 
 ![YOLO26n detecting two people from 15 m over the protected area](media/images/urban_detection_yolo26n.png)
 
-*Gazebo, 15 m altitude, fine-tuned YOLO26n. Both people are found; the drone's own shadow (left) is not.*
+*Gazebo, 15 m altitude, the earlier person-only YOLO26n. Both people are found; the drone's own shadow (left) is not.*
 
-> **Background.** This was my TÜBİTAK 2209-A supported undergraduate graduation project. The hardware tests were done in 2025 with a Pixhawk and a Raspberry Pi 5. The drone, the original companion script and the original trained model are no longer available, so in 2026 I rebuilt the system in simulation (ArduPilot SITL + Gazebo Harmonic) and retrained the detector. Everything below the "Original hardware" section was built and measured in simulation.
+> **Background.** This was my TÜBİTAK 2209-A supported undergraduate graduation project. The hardware tests were done in 2025 with a Pixhawk and a Raspberry Pi 5. The drone, the original companion script and the original trained model are no longer available, so in 2026 I rebuilt the system in simulation (ArduPilot SITL + Gazebo Harmonic) and retrained the detector. Flight behaviour below was built and tested in simulation; the detector was also measured on public datasets and two street videos.
 
 ## How it works
 
@@ -19,7 +19,7 @@ flowchart LR
     GZ -- camera frames<br/>gz-transport --> C
     AP -- HEARTBEAT, GLOBAL_POSITION_INT,<br/>MISSION_ITEM_REACHED --> C
     subgraph C[Companion app - src/security_drone]
-        T[Trigger at waypoint 2] --> D[Detection thread<br/>YOLO26n, conf 0.4]
+        T[Trigger at waypoint 2] --> D[Detection thread<br/>YOLO26n, conf 0.4<br/>+ track filter]
         D --> A[Threat alarm<br/>state machine]
     end
     A -- STATUSTEXT --> AP --> G[Ground station]
@@ -44,7 +44,7 @@ The original COCO `yolov8n.pt` is trained mostly on ground-level photos and bare
 | YOLOv8n + VisDrone | 0.240 | 0.438 | 0.405 | 3.0 M |
 | YOLOv8n + VisDrone + negatives | 0.237 | 0.437 | 0.406 | 3.0 M |
 | YOLO11n + VisDrone + negatives | 0.246 | 0.440 | 0.407 | 2.6 M |
-| **YOLO26n + VisDrone + negatives** (used) | **0.266** | **0.455** | **0.420** | 2.5 M |
+| **YOLO26n + VisDrone + negatives** | **0.266** | **0.455** | **0.420** | 2.5 M |
 
 Fine-tuning more than doubles mAP; the fine-tuned model at 640 px beats the COCO model at 1280 px with a quarter of the computation. Full tables: [`docs/results/`](docs/results).
 
@@ -62,7 +62,7 @@ Fix: fly Gazebo missions in a world with nobody in it (several sun angles, 6-25 
 | YOLOv8n + VisDrone | 15.5% |
 | any model + VisDrone + negatives | **0%** |
 
-Test-dev mAP stayed the same. The cost showed up in a held-out Gazebo flight: the YOLOv8n negatives model found the *second* of two people in fewer frames, especially people with long shadows. YOLO11n and YOLO26n trained the same way kept more of them, which together with test-dev and equal speed is why YOLO26n is the default ([threshold sweep](docs/results/threshold_sweep.csv)).
+Test-dev mAP stayed the same. The cost showed up in a held-out Gazebo flight: the YOLOv8n negatives model found the *second* of two people in fewer frames, especially people with long shadows. YOLO11n and YOLO26n trained the same way kept more of them, which together with test-dev and equal speed is why YOLO26n became the base for the later models ([threshold sweep](docs/results/threshold_sweep.csv)).
 
 ### A real photo as the ground
 
@@ -76,17 +76,17 @@ A flight with the 3D people removed, over the lot, a school roof and yard, house
 | YOLOv8n + VisDrone | 4 | 10.4% |
 | YOLOv8n + VisDrone + negatives | 4 | 0.7% |
 | YOLO11n + VisDrone + negatives | 4 | 0% |
-| YOLO26n + VisDrone + negatives (used) | 0 | 0% |
+| YOLO26n + VisDrone + negatives | 0 | 0% |
 
 At conf 0.4 the false-positive rates are 14.7%, 3.3%, 0%, 0% and 0% ([full table](docs/results/ortho_negatives.csv)).
 
 - The COCO model boxed parked cars and their shadows seen from above, and never the pedestrian.
 - The VisDrone model without negatives boxed a light patch in the grass, a white object on a sandy yard, a dark gap at a roof edge and, over the grey area outside the photo, the drone's own shadow again.
 - The hard negatives were all synthetic Gazebo frames, yet on real photo texture they cut false-positive frames from 10% to under 1%.
-- YOLO26n, the default model, raised no false alarm but also missed the real pedestrian: its best score for it was 0.21, under the 0.25 threshold. YOLO11n found it in 4 frames at 0.57-0.61, again without false positives. On an earlier flight over the same photo YOLO26n did box the pedestrian (2 frames, 0.32) and a dark roof gap (1 frame). One pedestrian in one photo is too little to rank the models, but it matches the Gazebo hover, where YOLO11n also found more of the hard-to-see people.
+- YOLO26n, the default at the time, raised no false alarm but also missed the real pedestrian: its best score for it was 0.21, under the 0.25 threshold. YOLO11n found it in 4 frames at 0.57-0.61, again without false positives. On an earlier flight over the same photo YOLO26n did box the pedestrian (2 frames, 0.32) and a dark roof gap (1 frame). One pedestrian in one photo is too little to rank the models, but it matches the Gazebo hover, where YOLO11n also found more of the hard-to-see people.
 - The ground is a stitched orthomosaic at 4 cm/px, blurrier than a live camera: a Camera Module 3 at 15 m, fed to the detector at 1280 px, sees ~2 cm/px, and stitching smears moving people and leans buildings. The absolute rates are likely pessimistic; the comparison between models on the same frames is the useful part.
 
-### End-to-end flight (urban world, YOLO26n)
+### End-to-end flight (urban world, earlier person-only YOLO26n)
 
 [`sim/fly_companion_patrol.sh`](sim/fly_companion_patrol.sh) runs Gazebo, SITL, the companion and the mission unattended. Patrol flight, with the patrol time shortened to 2 min for the test:
 
@@ -101,7 +101,7 @@ An earlier hover test over the same spot (`fly_patrol_mission.py --hover 10`) fo
 
 The neighbourhood world (`--world neighborhood`, generated by [`sim/make_neighborhood.py`](sim/make_neighborhood.py)) has a street grid, 24 houses, vehicles, street furniture, standing and walking people and dogs. A 150 s flight with the people removed gave 29 frames with a box and 8 false alarms: a fire hydrant in 15 frames, a mailbox in 6, a dog in 4 and a trash bin in 2.
 
-Requiring 3 frames in 1 s before an alarm ([`detection/confirm.py`](src/security_drone/detection/confirm.py), tested on recordings with [`training/replay_alarm.py`](training/replay_alarm.py), not connected to the alarm) cut false alarms from 6 to 2, but delayed the first real alarm from 2.8 s to 20.8 s, because a moving camera sees a person for only 1-2 frames. What remained were fixed objects, which a temporal rule cannot remove.
+Requiring 3 frames in 1 s before an alarm ([`detection/confirm.py`](src/security_drone/detection/confirm.py), tested on recordings with [`training/replay_alarm.py`](training/replay_alarm.py), with the earlier model and not yet connected to the alarm) cut false alarms from 6 to 2, but delayed the first real alarm from 2.8 s to 20.8 s, because a moving camera sees a person for only 1-2 frames. What remained were fixed objects, which a temporal rule cannot remove.
 
 ### Real images from above
 
@@ -181,7 +181,7 @@ python3 -m venv --system-site-packages ~/venvs/security-drone   # system package
 ~/venvs/security-drone/bin/python -m pytest -q
 ```
 
-The trained weights are not in git. Download `yolo26n_visdrone_person_neg.pt` from the [Releases](https://github.com/cihankarat4s/autonomous-security-drone/releases) page into the repository root, or train it with [`training/colab_train.ipynb`](training/colab_train.ipynb). To use the COCO weights instead, set `detection.model: yolov8n.pt` and `detection.confidence: 0.4` in [`config/default.yaml`](config/default.yaml). The five-class model set as default in `config/default.yaml` and the other models from "Real images from above" are not published, because their training data is for non-commercial use. Set `detection.model: yolo26n_visdrone_person_neg.pt` to run with the published weights. [`training/watch_video.py`](training/watch_video.py) shows any model's person boxes on a video.
+The trained weights are not in git. [`config/default.yaml`](config/default.yaml) names the five-class model, which is not published, like the other models from "Real images from above", because their training data is for non-commercial use. To run the project, download `yolo26n_visdrone_person_neg.pt` from the [Releases](https://github.com/cihankarat4s/autonomous-security-drone/releases) page into the repository root and set `detection.model` to it, or train it with [`training/colab_train.ipynb`](training/colab_train.ipynb). The COCO weights also work: `detection.model: yolov8n.pt`. [`training/watch_video.py`](training/watch_video.py) shows any model's person boxes on a video.
 
 One command, unattended (`urban`, `ortho`, `neighborhood` or `flat` world, optional patrol time in seconds):
 
@@ -214,10 +214,10 @@ media/images/         figures used in this README
 
 ## Limitations
 
-- Everything after 2025 was tested in simulation only. The Gazebo people and shadows are rendered, not real, and the hard negatives are synthetic.
+- Flight code after 2025 was tested in simulation only, and the five-class model and track filter have no reported flight. The Gazebo people and shadows are rendered, not real, and the hard negatives are synthetic.
 - No measurement on a Raspberry Pi; the CPU numbers are from a laptop.
 - I have no drone footage of my own. The real-image tests are public datasets, one orthophoto used as Gazebo ground and two videos filmed from a building, whose height and viewpoint may differ from a 15 m patrol. On the orthophoto the people in the patrol are rendered 3D models; the only real person is one pedestrian seen in ~5 frames.
-- The video counts are from sampled frames, by eye, and do not measure recall.
+- The video results come from 192 frames of two scenes that I labelled by eye, and picking the model on them means they are no longer an untouched test.
 
 ## Data and licences
 
@@ -229,6 +229,7 @@ Non-commercial use only: the trained models come from the datasets below, and th
 - JLU_DD: CC BY 4.0.
 - "Labrador Dog" 3D model by kenchoo: CC BY 4.0, in `sim/models/labrador_dog`.
 - Orthophoto: OpenAerialMap, CC BY 4.0, credited above.
+- People Overhead (test only): CC0.
 
 ## Future work
 
@@ -243,7 +244,7 @@ Parked motorcycles as real negatives, a second-stage classifier for fixed object
 
 **Hardware:** Pixhawk, Raspberry Pi 5 (8 GB), Camera Module 3 NoIR, GPS, 3DR 433 MHz telemetry, FlySky FS-i6X with receiver, 3S 6200 mAh Li-Po, MINI560 step-down regulator, buzzer.
 
-Earlier 2024 prototypes (DroneKit flight helpers, OpenCV STOP-sign and face tracking) are in the initial commit `dbd549e`.
+Earlier 2024 prototypes (DroneKit flight helpers, OpenCV STOP-sign and face tracking) are in the initial commit `2bb6c1f`.
 
 ## Safety
 

@@ -19,18 +19,14 @@ camera:
   gazebo_topic: /world/security_patrol/model/iris_with_gimbal/model/gimbal/link/pitch_link/sensor/camera/image
 
 detection:
-  # YOLO26n fine-tuned on VisDrone persons + Gazebo hard negatives
-  # (training/colab_train.ipynb). Not in git; see the README to get it.
-  # Chosen over YOLOv8n/YOLO11n trained the same way: best VisDrone test-dev
-  # mAP50 at every input size, same CPU latency (docs/results/).
-  # yolov8n.pt (COCO, downloaded on first use) also works, with confidence 0.4.
-  model: yolo26n_visdrone_person_neg.pt
-  # 0.25, not the original 0.4: this model has 0 false-positive frames down to
-  # 0.2; on the held-out hover it finds a person in every frame at 0.25 (98%
-  # from 0.3) and the second of two people in ~1 in 2 frames (0.4: ~2 in 5).
-  # See docs/results/threshold_sweep.csv.
-  confidence: 0.25
-  classes: [0]               # "person" in both models
+  # YOLO26n with five classes: person, motor, bicycle, vehicle, dog (README,
+  # "Real images from above"). Not in git and not published; see the README.
+  # Best on the hand-labelled street video; on real clutter (rubbish, bags) it
+  # raises more false boxes than the older person-only model.
+  model: yolo26n_multiclass_ext.pt
+  # 0.4: 0.25 raised false boxes on the same video from 14 to 100.
+  confidence: 0.4
+  classes: [0]               # only people raise the alarm
   # Measured on the WP2 Gazebo frame (person ~45 px, seen from above):
   # 640 found nothing at 0.4, 1280 found the person at 0.80. A larger
   # network input gives the small target more feature-map cells.
@@ -41,6 +37,15 @@ detection:
   equalize: false            # histogram equalisation on Y
   sharpen: false             # sharpening kernel
   snapshot_dir: logs/snapshots # first annotated detection is saved here (not in git)
+
+tracking:
+  # A box counts only once its track is seen in min_hits frames within window_s;
+  # a confirmed track that loses its box stays for hold_s. max_px: match radius.
+  enabled: true
+  min_hits: 3
+  window_s: 1.0
+  hold_s: 0.5
+  max_px: 60
 
 alert:
   clear_after_s: 3           # alarm off after nobody is seen for this long

@@ -1,10 +1,12 @@
 import math
 from collections import deque
+from dataclasses import replace
 
 import cv2
 import numpy as np
 
 SHIFT_WIDTH = 320    # frames are compared at this width; enough for a global shift
+MIN_RESPONSE = 0.01  # phase correlation peak below this is not a real match
 
 
 def camera_shift(prev, frame):
@@ -18,7 +20,9 @@ def camera_shift(prev, frame):
     a, b = (cv2.resize(cv2.cvtColor(f, cv2.COLOR_BGR2GRAY), None, fx=scale, fy=scale,
                        interpolation=cv2.INTER_AREA).astype(np.float32) for f in (prev, frame))
     window = cv2.createHanningWindow(a.shape[::-1], cv2.CV_32F)
-    (dx, dy), _ = cv2.phaseCorrelate(a, b, window)
+    (dx, dy), response = cv2.phaseCorrelate(a, b, window)
+    if not response > MIN_RESPONSE:      # a blank frame gives a meaningless peak
+        return 0.0, 0.0
     return dx / scale, dy / scale
 
 
@@ -101,3 +105,45 @@ class TrackConfirmer:
     def reset(self):
         self._seen.clear()
         self._confirmed.clear()
+
+
+class TrackFilter:
+    """Hides boxes seen only for a moment and keeps boxes lost for a moment.
+
+    A detection is passed on once its track is confirmed (TrackConfirmer). A
+    confirmed track that gets no box stays in the output at its last place,
+    moved with the camera, for up to hold_s. The confirmed flag lasts as long
+    as the track does, so a person who flickers is not confirmed again.
+    """
+
+    def __init__(self, min_hits=3, window_s=1.0, hold_s=0.5, max_px=60.0):
+        self.tracker = CentroidTracker(max_px=max_px, max_age_s=max(hold_s, window_s))
+        self.confirmer = TrackConfirmer(min_hits, window_s)
+        self.hold_s = hold_s
+        self._held = {}            # track id -> (detection, last seen)
+        self._prev = None
+
+    def update(self, frame, detections, now):
+        """Boxes of one frame, unfiltered; returns the boxes to act on."""
+        shift = camera_shift(self._prev, frame) if self._prev is not None else (0.0, 0.0)
+        self._prev = frame
+        centres = [((d.x1 + d.x2) / 2, (d.y1 + d.y2) / 2) for d in detections]
+        ids = self.tracker.update(centres, now, shift)
+        confirmed = self.confirmer.update(ids, now)
+        dx, dy = shift
+        self._held = {tid: (replace(d, x1=d.x1 + dx, y1=d.y1 + dy, x2=d.x2 + dx, y2=d.y2 + dy), t)
+                      for tid, (d, t) in self._held.items() if now - t <= self.hold_s}
+        passed = []
+        for detection, tid in zip(detections, ids):
+            if tid in confirmed or tid in self._held:
+                self._held[tid] = (detection, now)
+                passed.append(detection)
+        seen = set(ids)
+        passed += [d for tid, (d, _) in self._held.items() if tid not in seen]
+        return passed
+
+    def reset(self):
+        self.tracker.reset()
+        self.confirmer.reset()
+        self._held.clear()
+        self._prev = None

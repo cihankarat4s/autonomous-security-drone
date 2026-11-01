@@ -12,6 +12,7 @@ from security_drone.alert.alarm import AlarmEvent, LogAlarm, ThreatAlarm
 from security_drone.alert.statustext import send_statustext, threat_text
 from security_drone.camera.gazebo_camera import GazeboCamera
 from security_drone.config import DEFAULT_CONFIG_PATH, load_config
+from security_drone.detection.confirm import TrackFilter
 from security_drone.detection.detector import PersonDetector, draw_detections
 from security_drone.detection.frame_log import FrameLog
 from security_drone.detection.worker import DetectionWorker
@@ -67,6 +68,9 @@ class Companion:
         self.results = queue.Queue()
         self.worker = None
         self.snapshot_saved = False
+        tracking = config["tracking"]
+        self.track_filter = TrackFilter(tracking["min_hits"], tracking["window_s"], tracking["hold_s"],
+                                        tracking["max_px"]) if tracking["enabled"] else None
 
         self.state = None
         self.position = None
@@ -167,6 +171,8 @@ class Companion:
             sharpen_edges=self.detection_config["sharpen"],
         )
         self.detection_started = time.monotonic()
+        if self.track_filter is not None:
+            self.track_filter.reset()
         self.worker.start()
 
     def stop_detection(self):
@@ -196,6 +202,8 @@ class Companion:
                                      alt, result.detections, result.inference_s)
             if self.record_dir is not None:
                 self.record_frame(result.frame, now)
+            if self.track_filter is not None:
+                result.detections = self.track_filter.update(result.frame, result.detections, now)
             count = len(result.detections)
             if count:
                 best = max(d.confidence for d in result.detections)

@@ -1,4 +1,7 @@
-from security_drone.detection.confirm import CentroidTracker, TrackConfirmer
+import numpy as np
+
+from security_drone.detection.confirm import CentroidTracker, TrackConfirmer, TrackFilter
+from security_drone.detection.detector import Detection
 
 
 def test_single_frame_is_not_confirmed():
@@ -85,3 +88,30 @@ def test_camera_shift_measures_an_image_translation():
     frame = big[50:530, 90:730]          # camera moved right: content shifts 40 px left
     dx, dy = camera_shift(prev, frame)
     assert abs(dx + 40) < 3 and abs(dy) < 3
+
+
+def _frame():
+    return np.zeros((96, 128, 3), np.uint8)
+
+
+def test_filter_hides_a_flicker_and_passes_a_steady_box():
+    f = TrackFilter(min_hits=3, window_s=1.0, hold_s=0.5)
+    box = Detection(10, 10, 30, 30, 0.5)
+    assert f.update(_frame(), [box], 0.0) == []
+    assert f.update(_frame(), [box], 0.1) == []
+    assert f.update(_frame(), [box], 0.2) == [box]
+
+
+def test_filter_holds_a_confirmed_box_for_a_moment():
+    f = TrackFilter(min_hits=2, window_s=1.0, hold_s=0.5)
+    box = Detection(10, 10, 30, 30, 0.5)
+    f.update(_frame(), [box], 0.0)
+    f.update(_frame(), [box], 0.1)
+    assert len(f.update(_frame(), [], 0.3)) == 1
+    assert f.update(_frame(), [], 0.8) == []
+
+
+def test_filter_does_not_hold_an_unconfirmed_box():
+    f = TrackFilter(min_hits=3, window_s=1.0, hold_s=0.5)
+    f.update(_frame(), [Detection(10, 10, 30, 30, 0.5)], 0.0)
+    assert f.update(_frame(), [], 0.1) == []

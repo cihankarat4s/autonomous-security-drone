@@ -167,7 +167,7 @@ python3 -m venv --system-site-packages ~/venvs/security-drone   # system package
 ~/venvs/security-drone/bin/python -m pytest -q
 ```
 
-The trained weights are not in git. Download `yolo26n_visdrone_person_neg.pt` from the [Releases](https://github.com/cihankarat4s/autonomous-security-drone/releases) page into the repository root, or train it with [`training/colab_train.ipynb`](training/colab_train.ipynb). To use the COCO weights instead, set `detection.model: yolov8n.pt` and `detection.confidence: 0.4` in [`config/default.yaml`](config/default.yaml). The newer models from "Real images from above" are in the same page under `models-v2`; with the five-class model keep `detection.classes: [0]`, so that only people raise the alarm. [`training/watch_video.py`](training/watch_video.py) shows any model's person boxes on a video.
+The trained weights are not in git. Download `yolo26n_visdrone_person_neg.pt` from the [Releases](https://github.com/cihankarat4s/autonomous-security-drone/releases) page into the repository root, or train it with [`training/colab_train.ipynb`](training/colab_train.ipynb). To use the COCO weights instead, set `detection.model: yolov8n.pt` and `detection.confidence: 0.4` in [`config/default.yaml`](config/default.yaml). The models from "Real images from above" are not published, because their training data is for non-commercial use. [`training/watch_video.py`](training/watch_video.py) shows any model's person boxes on a video.
 
 One command, unattended (`urban`, `ortho`, `neighborhood` or `flat` world, optional patrol time in seconds):
 

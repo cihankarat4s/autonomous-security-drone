@@ -4,6 +4,17 @@ An autonomous drone that flies a pre-planned patrol mission, starts looking for 
 
 The flight controller runs ArduPilot; a companion computer listens to it over MAVLink, runs a YOLO person detector on the downward camera and raises a non-blocking alarm.
 
+<p align="center"><img src="media/images/drone_top.jpg" width="520" alt="The F450 drone seen from above: Pixhawk, GPS, telemetry radio and RC receiver"></p>
+
+<p align="center"><em>The drone from the 2025 hardware tests. The system was rebuilt in simulation in 2026.</em></p>
+
+**At a glance**
+
+- **Flight logic:** ArduPilot mission, MAVLink companion app, command acknowledgement checks, automatic RTL. Tested in SITL + Gazebo.
+- **Detection:** YOLO26n fine-tuned on real drone images. On 460 hand-labelled people in street video from above: 73.5% recall, 92.9% precision at conf 0.4.
+- **Honest limits:** it still calls some fixed objects people (a covered motorcycle, rubbish, bags). The results below show where it fails as well as where it works.
+- **Stack:** Python, pymavlink, ArduPilot, Gazebo Harmonic, Ultralytics YOLO, OpenCV, pytest (72 tests).
+
 ![YOLO26n detecting two people from 15 m over the protected area](media/images/urban_detection_yolo26n.png)
 
 *Gazebo, 15 m altitude, the earlier person-only YOLO26n. Both people are found; the drone's own shadow (left) is not.*
@@ -241,6 +252,17 @@ Parked motorcycles as real negatives, a second-stage classifier for fixed object
 2. A Raspberry Pi 5 on TELEM2 listened over MAVLink and started detection at the surveillance waypoint.
 3. Frames from a Camera Module 3 NoIR were enhanced (histogram equalisation, sharpening) and passed to YOLOv8n.
 4. On a detection, a buzzer sounded and a `STATUSTEXT` was sent to the ground station; the drone returned with RTL.
+
+| | |
+|---|---|
+| ![Side view with the Raspberry Pi 5 between the frame plates](media/images/drone_side.jpg) | ![Angled view with the Pixhawk, receiver and 3DR telemetry radio](media/images/drone_angle.jpg) |
+| *Side view: the Raspberry Pi 5 sits between the frame plates.* | *Pixhawk 2.4.8 on damping mounts, FS-iA6B receiver, 3DR radio, M8N GPS.* |
+| ![Underside with the Li-Po pack, buzzer and Camera Module 3 NoIR](media/images/drone_camera.jpg) | ![Frame arms, ESC, Li-Po and transmitter during the build](media/images/drone_build.jpg) |
+| *Underside: 3S 6200 mAh Li-Po, buzzer and the downward Camera Module 3 NoIR.* | *During the build.* |
+
+![Hardware wiring diagram](media/images/hardware_wiring_diagram.png)
+
+*The diagram does not show the buzzer or the MINI560 step-down regulator that powered the Raspberry Pi; both were on the drone.*
 
 **Hardware:** Pixhawk, Raspberry Pi 5 (8 GB), Camera Module 3 NoIR, GPS, 3DR 433 MHz telemetry, FlySky FS-i6X with receiver, 3S 6200 mAh Li-Po, MINI560 step-down regulator, buzzer.
 

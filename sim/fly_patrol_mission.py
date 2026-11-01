@@ -1,6 +1,6 @@
 """Upload a patrol mission to SITL and fly it in AUTO.
 
-Stands in for Mission Planner during tests. The mission follows the thesis:
+Stands in for Mission Planner during tests. The mission follows the original project:
 take off, fly to the protected area, patrol it until the mission time is up,
 return home. The companion app ends the patrol by sending RTL.
 

@@ -7,9 +7,9 @@ mission:
   # MISSION_ITEM_REACHED seq that starts detection.
   # seq 0 = home, seq 1 = TAKEOFF, seq 2 = first patrol waypoint.
   trigger_seq: 2
-  # Patrol over the area for this long, then the companion sends RTL (thesis:
+  # Patrol over the area for this long, then the companion sends RTL (as on the original drone:
   # "when the mission duration ends ... the Raspberry Pi sends an RTL").
-  # Thesis flight time: 6200 mAh / 37.8 A = ~10 min. Takeoff, the flight out,
+  # Original flight time: 6200 mAh / 37.8 A = ~10 min. Takeoff, the flight out,
   # the return and landing take ~1.5 min; 6 min leaves ~25% in reserve.
   # The Pixhawk's own low-battery failsafe stays the last line of defence.
   patrol_time_s: 360
@@ -25,7 +25,7 @@ detection:
   # mAP50 at every input size, same CPU latency (docs/results/).
   # yolov8n.pt (COCO, downloaded on first use) also works, with confidence 0.4.
   model: yolo26n_visdrone_person_neg.pt
-  # 0.25, not the thesis 0.4: this model has 0 false-positive frames down to
+  # 0.25, not the original 0.4: this model has 0 false-positive frames down to
   # 0.2; on the held-out hover it finds a person in every frame at 0.25 (98%
   # from 0.3) and the second of two people in ~1 in 2 frames (0.4: ~2 in 5).
   # See docs/results/threshold_sweep.csv.
@@ -36,7 +36,7 @@ detection:
   # network input gives the small target more feature-map cells.
   image_size: 1280
   device: null               # null = GPU if available, else CPU
-  # Thesis enhancement for the low-light NoIR camera. Off in simulation:
+  # Original enhancement for the low-light NoIR camera. Off in simulation:
   # on clean renders it made YOLO box the person's shadow as well.
   equalize: false            # histogram equalisation on Y
   sharpen: false             # sharpening kernel

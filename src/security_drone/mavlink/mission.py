@@ -1,7 +1,7 @@
 class TriggerWatcher:
     """Reports once when the vehicle reaches the configured mission item.
 
-    The thesis code hard-coded seq == 1, but in a mission that starts with
+    The original code hard-coded seq == 1, but in a mission that starts with
     TAKEOFF, seq 1 is reached right after takeoff, above the launch point.
     The patrol waypoint's seq therefore comes from the config file.
     """
@@ -25,7 +25,7 @@ class TriggerWatcher:
 class PatrolTimer:
     """Ends the patrol after a fixed time over the protected area.
 
-    The thesis drone patrols until its mission time is up and the Pi then
+    The original drone patrols until its mission time is up and the Pi then
     sends RTL. The time comes from the battery: ~10 min of flight on the
     6200 mAh pack, minus the flight out, the return and a reserve.
     """

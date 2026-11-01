@@ -27,7 +27,7 @@ HEARTBEAT_LOST_S = 3.0
 POSITION_LOG_PERIOD_S = 5.0
 FPS_LOG_PERIOD_S = 5.0
 # Flight modes that take the vehicle away from the protected area. A ground
-# station switching to one of them ends the patrol (the thesis "return" command).
+# station switching to one of them ends the patrol (the original "return" command).
 RETURN_MODES = {"RTL", "LAND", "SMART_RTL"}
 
 

@@ -1,4 +1,4 @@
-"""Image enhancement applied before detection (thesis section 6.3.1)."""
+"""Image enhancement applied before detection (from the original drone)."""
 import cv2
 import numpy as np
 

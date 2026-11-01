@@ -25,11 +25,11 @@ flowchart LR
     A -- STATUSTEXT --> AP --> G[Ground station]
 ```
 
-1. The mission follows the thesis: take off to 15 m, fly to the protected area 60 m north (waypoint 2), then fly square laps over it. The camera sees ~26 x 19.5 m from 15 m; laps 5 m off the centre keep the centre in view on every leg and each edge of the 20 x 20 m area on at least one.
+1. The mission follows the original project: take off to 15 m, fly to the protected area 60 m north (waypoint 2), then fly square laps over it. The camera sees ~26 x 19.5 m from 15 m; laps 5 m off the centre keep the centre in view on every leg and each edge of the 20 x 20 m area on at least one.
 2. When ArduPilot reports `MISSION_ITEM_REACHED` for the trigger waypoint, the companion starts a detection thread on the camera feed and a patrol timer.
 3. Detections go through a queue to the main thread, which owns the MAVLink link. The alarm turns on at the first person, repeats every 10 s while people are seen, and clears 3 s after the last one.
 4. Each alert is a `STATUSTEXT` from the companion's own component id, e.g. `Threat: 2 person at -35.36272,149.16524 04:08:36Z`, which the autopilot forwards to the ground station.
-5. When the patrol time is up, the companion sends RTL and checks that the autopilot accepted it (thesis: the Raspberry Pi sends RTL when the mission time ends). The 6 min come from the battery: the thesis estimates ~10 min of flight on the 6200 mAh pack, and the flight out, the return and landing take ~1.5 min. A ground station can end the patrol earlier by switching to RTL or LAND. The Pixhawk's own battery failsafe and a final RTL after a fixed number of laps are the backups.
+5. When the patrol time is up, the companion sends RTL and checks that the autopilot accepted it (as on the original drone: the Raspberry Pi sends RTL when the mission time ends). The 6 min come from the battery: the original estimate was ~10 min of flight on the 6200 mAh pack, and the flight out, the return and landing take ~1.5 min. A ground station can end the patrol earlier by switching to RTL or LAND. The Pixhawk's own battery failsafe and a final RTL after a fixed number of laps are the backups.
 6. Detection stops when the patrol ends, ready for the next flight after landing.
 
 ## Results
@@ -120,7 +120,7 @@ Training on top-down data alone (B) made the model forget everything else. The f
 
 The first check on footage no model trained on: two videos hand-filmed from a building, looking down at a street. Nothing is labelled, so I took every 30th frame of the first and every 15th of the second, cropped every box at conf 0.4 and counted by eye. Counts are approximate, and missed people were not counted:
 
-| False boxes / all boxes | `overhead_people_test` | `drone_test_video` |
+| False boxes / all boxes | Video 1 | Video 2 |
 |---|---|---|
 | A | ~35 / 328 (up to 0.77) | 0 / 14 |
 | Five classes | ~9 / 331 (up to 0.57) | 23 / 40 (up to 0.71) |
@@ -142,12 +142,12 @@ YOLOv8n, YOLO11n and YOLO26n were within ~7% of each other at every size, despit
 
 Things that went wrong or were not what I expected, and what I changed:
 
-- **Trigger on takeoff.** The thesis started detection at `seq == 1`, which in a mission that begins with TAKEOFF is the takeoff itself. The trigger waypoint is now configurable (`trigger_seq: 2`).
+- **Trigger on takeoff.** The original code started detection at `seq == 1`, which in a mission that begins with TAKEOFF is the takeoff itself. The trigger waypoint is now configurable (`trigger_seq: 2`).
 - **Commands that silently fail.** After the default 10 s disarm delay, TAKEOFF returned `MAV_RESULT_FAILED`. Every command now checks `COMMAND_ACK.result` instead of assuming success.
 - **Talking to the wrong component.** pymavlink left `target_component` at 0, and the autopilot forwards the ground station's heartbeats between links, so the companion could lock onto the ground station instead of the autopilot. `connect()` now waits for the autopilot's own heartbeat and sets the target component.
 - **A hold time delays the waypoint event.** With a hold time on the waypoint itself, `MISSION_ITEM_REACHED` only arrives when the hold ends. The hover is a separate `LOITER_TIME` item.
 - **A command item shifted the waypoint event.** With a `DO_CHANGE_SPEED` right after the trigger waypoint, ArduPilot reported the waypoint's `MISSION_ITEM_REACHED` with the next seq (its own `STATUSTEXT` still said "Reached command #2"), so detection never started and the drone patrolled blind. The trigger waypoint is now followed by a navigation item, and a test checks it.
-- **The alarm froze the loop.** The thesis alarm used `sleep()` in the main loop. It is now a non-blocking state machine that also clears itself.
+- **The alarm froze the loop.** The original alarm used `sleep()` in the main loop. It is now a non-blocking state machine that also clears itself.
 - **Small targets need a large input.** A person is ~45 px tall from 15 m; COCO YOLOv8n found nothing at 640 px and found it at 1280 px.
 - **A dataset bug that looked like training.** A symlinked image folder made Ultralytics read the original 10-class labels, mark almost every image "corrupt" and train on nothing, without an error. Images are now hard-linked.
 - **Several boxes on one person.** YOLO26n is NMS-free and sometimes puts nested boxes on one person (body, body + shadow), so "1 person" was reported as up to 5. Their IoU is low, so plain NMS would not merge them; [`merge_overlapping()`](src/security_drone/detection/detector.py) drops a box that covers most of a more confident one.
@@ -226,10 +226,6 @@ Parked motorcycles as real negatives, a second-stage classifier for fixed object
 2. A Raspberry Pi 5 on TELEM2 listened over MAVLink and started detection at the surveillance waypoint.
 3. Frames from a Camera Module 3 NoIR were enhanced (histogram equalisation, sharpening) and passed to YOLOv8n.
 4. On a detection, a buzzer sounded and a `STATUSTEXT` was sent to the ground station; the drone returned with RTL.
-
-![Hardware wiring diagram](media/images/hardware_wiring_diagram.png)
-
-*The diagram does not show the buzzer or the MINI560 step-down regulator that powered the Raspberry Pi; both were on the drone.*
 
 **Hardware:** Pixhawk, Raspberry Pi 5 (8 GB), Camera Module 3 NoIR, GPS, 3DR 433 MHz telemetry, FlySky FS-i6X with receiver, 3S 6200 mAh Li-Po, MINI560 step-down regulator, buzzer.
 

@@ -13,7 +13,7 @@ class AlarmEvent(enum.Enum):
 class ThreatAlarm:
     """Decides when the alarm turns on, repeats and turns off.
 
-    The thesis code slept 5 s while the buzzer sounded, which froze the camera
+    The original code slept 5 s while the buzzer sounded, which froze the camera
     and detection loop, and stopped after a fixed time even if the threat was
     still there. Here time is passed in, nothing sleeps, and the alarm stays
     on until nobody has been seen for clear_after_s.

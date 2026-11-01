@@ -141,10 +141,6 @@ A real-clutter check reversed the order. On [People Overhead](https://www.kaggle
 
 It keeps people through flicker, but false boxes went up, not down: the mistakes here are objects that stay put, which pass any "seen for a while" rule, and a held box lags behind a walking person and misses the label. It is on by default because it stops the alarm reacting to single-frame boxes.
 
-### Demo flights
-
-Patrol with the five-class model and the filter, 120 s, frames recorded and replayed with [`sim/make_demo_video.py`](sim/make_demo_video.py) (grey: every box, green: passed the filter). The urban world found the people in the area, with the red fire hydrant boxed too at times. In the neighbourhood the first alarm of the flight was a hydrant, which a filter cannot remove because it does not move. Both flights ended with RTL, landing and disarm.
-
 ### CPU speed (a stand-in for the Raspberry Pi)
 
 The Pi is not available, so latency was measured on a laptop CPU (Intel i5-10300H) pinned to 4 cores like a Pi 5, preprocessing + inference + postprocessing per frame ([`training/benchmark_cpu.py`](training/benchmark_cpu.py)):

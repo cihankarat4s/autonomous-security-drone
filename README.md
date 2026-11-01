@@ -19,7 +19,7 @@ flowchart LR
     GZ -- camera frames<br/>gz-transport --> C
     AP -- HEARTBEAT, GLOBAL_POSITION_INT,<br/>MISSION_ITEM_REACHED --> C
     subgraph C[Companion app - src/security_drone]
-        T[Trigger at waypoint 2] --> D[Detection thread<br/>YOLO26n, conf 0.25]
+        T[Trigger at waypoint 2] --> D[Detection thread<br/>YOLO26n, conf 0.4]
         D --> A[Threat alarm<br/>state machine]
     end
     A -- STATUSTEXT --> AP --> G[Ground station]
@@ -118,14 +118,32 @@ Person mAP50 at 1280 px:
 
 Training on top-down data alone (B) made the model forget everything else. The five-class model was meant to stop parked motorcycles being called people; the JLU_DD and Stanford columns are left empty for it because frames of those sets went into its training.
 
-The first check on footage no model trained on: two videos hand-filmed from a building, looking down at a street. Nothing is labelled, so I took every 30th frame of the first and every 15th of the second, cropped every box at conf 0.4 and counted by eye. Counts are approximate, and missed people were not counted:
+The first check on footage no model trained on: two videos hand-filmed from a building, looking down at a street. I labelled 192 frames (460 people) by eye, starting from the models' own candidate boxes; riders on moving motorcycles are ignored and a crowded cafe scene is left out ([`training/make_video_testset.py`](training/make_video_testset.py)). Conf 0.4, IoU 0.5:
 
-| False boxes / all boxes | Video 1 | Video 2 |
-|---|---|---|
-| A | ~35 / 328 (up to 0.77) | 0 / 14 |
-| Five classes | ~9 / 331 (up to 0.57) | 23 / 40 (up to 0.71) |
+| Model | True boxes | False boxes | Recall |
+|---|---|---|---|
+| YOLO26n + VisDrone + negatives | 195 | 34 | 42.4% |
+| A | 270 | 46 | 58.7% |
+| **Five classes** (used) | **338** | **26** | **73.5%** |
 
-Neither model wins on both. Each keeps calling one parked motorcycle a person: A a motorcycle with a blue helmet on it, the five-class model one with a jacket over it. Those scores overlap with real people, so a higher threshold does not solve it. The default model is unchanged until there is more test data.
+Two scenes, labelled by me, and the candidates came from A and the five-class model, which favours them over the older model. All 13 false boxes on the second video are one parked motorcycle with a jacket over it.
+
+A real-clutter check reversed the order. On [People Overhead](https://www.kaggle.com/datasets/hifrom/people-overhead) (CC0), 241 "negative" frames, frames with a person box at conf 0.4: older model 25, A 53, five classes 62. The false boxes are a few repeated objects (a rubbish pile, bags, a dog, a pothole), with scores up to ~0.8, so a higher threshold does not help. Only 2.7% of the five-class training images are empty, and it has few close-up examples of such objects. I chose the five-class model for recall and know this weakness.
+
+### Tracking, tried on the real videos
+
+[`TrackFilter`](src/security_drone/detection/confirm.py) passes a box once its track is seen in 3 frames within 1 s, and keeps a confirmed box for 0.5 s after it is lost. On the first video, five-class model, conf 0.4:
+
+| | True boxes | False boxes | Recall |
+|---|---|---|---|
+| No filter | 333 | 14 | 74.0% |
+| Filter | 373 | 74 | 82.9% |
+
+It keeps people through flicker, but false boxes went up, not down: the mistakes here are objects that stay put, which pass any "seen for a while" rule, and a held box lags behind a walking person and misses the label. It is on by default because it stops the alarm reacting to single-frame boxes.
+
+### Demo flights
+
+Patrol with the five-class model and the filter, 120 s, frames recorded and replayed with [`sim/make_demo_video.py`](sim/make_demo_video.py) (grey: every box, green: passed the filter). The urban world found the people in the area, with the red fire hydrant boxed too at times. In the neighbourhood the first alarm of the flight was a hydrant, which a filter cannot remove because it does not move. Both flights ended with RTL, landing and disarm.
 
 ### CPU speed (a stand-in for the Raspberry Pi)
 
@@ -167,7 +185,7 @@ python3 -m venv --system-site-packages ~/venvs/security-drone   # system package
 ~/venvs/security-drone/bin/python -m pytest -q
 ```
 
-The trained weights are not in git. Download `yolo26n_visdrone_person_neg.pt` from the [Releases](https://github.com/cihankarat4s/autonomous-security-drone/releases) page into the repository root, or train it with [`training/colab_train.ipynb`](training/colab_train.ipynb). To use the COCO weights instead, set `detection.model: yolov8n.pt` and `detection.confidence: 0.4` in [`config/default.yaml`](config/default.yaml). The models from "Real images from above" are not published, because their training data is for non-commercial use. [`training/watch_video.py`](training/watch_video.py) shows any model's person boxes on a video.
+The trained weights are not in git. Download `yolo26n_visdrone_person_neg.pt` from the [Releases](https://github.com/cihankarat4s/autonomous-security-drone/releases) page into the repository root, or train it with [`training/colab_train.ipynb`](training/colab_train.ipynb). To use the COCO weights instead, set `detection.model: yolov8n.pt` and `detection.confidence: 0.4` in [`config/default.yaml`](config/default.yaml). The five-class model set as default in `config/default.yaml` and the other models from "Real images from above" are not published, because their training data is for non-commercial use. Set `detection.model: yolo26n_visdrone_person_neg.pt` to run with the published weights. [`training/watch_video.py`](training/watch_video.py) shows any model's person boxes on a video.
 
 One command, unattended (`urban`, `ortho`, `neighborhood` or `flat` world, optional patrol time in seconds):
 
